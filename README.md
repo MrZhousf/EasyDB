@@ -8,6 +8,7 @@
 * 支持分页查询，分页查询只需要定义每页条数即可
 * 支持批量处理
 * 支持数据库升级，使数据库升级更为简洁
+* 完整的日志
 * 后续优化中...
 
 
@@ -114,6 +115,10 @@ dao.delete(data)
 long num = dao.countOf(DBInfo.get().where("group1", true));
 
 ```
+
+##相关截图
+###基本操作界面
+![](https://github.com/MrZhousf/EasyDB/blob/master/pic/1.jpg?raw=true)
 
 ##有问题反馈
 在使用中有任何问题，欢迎反馈给我，可以用以下联系方式跟我交流
