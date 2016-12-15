@@ -18,6 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * 数据库辅助基类
  * @author : zhousf
+ * 引入版本：com.j256.ormlite:ormlite-android:5.0
  */
 public abstract class BaseDBHelper extends OrmLiteSqliteOpenHelper {
 
