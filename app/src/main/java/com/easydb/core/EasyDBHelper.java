@@ -37,7 +37,7 @@ public class EasyDBHelper extends BaseDBHelper {
 		return helper;
 	}
 
-	public EasyDBHelper() {
+	private EasyDBHelper() {
 		super(BaseApplication.getApplication(),DB_NAME, null, DB_VERSION, tables);
 	}
 

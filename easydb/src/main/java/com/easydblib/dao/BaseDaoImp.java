@@ -177,6 +177,19 @@ public class BaseDaoImp<T> implements BaseDao<T> {
     }
 
     @Override
+    public List<T> query(QueryBuilder<T, Integer> queryBuilder){
+        List<T> all = new ArrayList<T>();
+        try {
+            long start = getTime();
+            all = dao.query(queryBuilder.prepare());
+            doLog("query["+(getTime()-start)+"ms] 影响行数："+all.size());
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return all;
+    }
+
+    @Override
     public long countOf() {
         return countOf(null);
     }
@@ -213,6 +226,24 @@ public class BaseDaoImp<T> implements BaseDao<T> {
             e.printStackTrace();
         }
         return !all.isEmpty();
+    }
+
+    @Override
+    public int executeRaw(String statement, String... arguments) {
+        int line = 0;
+        try {
+            long start = getTime();
+            line = dao.executeRaw(statement,arguments);
+            doLog("executeRaw["+(getTime()-start)+"ms] 影响行数："+line);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return line;
+    }
+
+    @Override
+    public Dao<T, Integer> fetchDao(){
+        return dao;
     }
 
     public int clearTable(){

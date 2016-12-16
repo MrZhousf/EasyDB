@@ -2,6 +2,8 @@ package com.easydblib.dao;
 
 
 import com.easydblib.info.DBInfo;
+import com.j256.ormlite.dao.Dao;
+import com.j256.ormlite.stmt.QueryBuilder;
 
 import java.util.List;
 
@@ -76,6 +78,13 @@ public interface BaseDao<T> {
     List<T> queryLimit(DBInfo dbInfo);
 
     /**
+     * 自定义查询
+     * @param queryBuilder 查询构建
+     * @return 映射类集合
+     */
+    List<T> query(QueryBuilder<T, Integer> queryBuilder);
+
+    /**
      * 统计条目数
      * @return 条目数
      */
@@ -96,9 +105,23 @@ public interface BaseDao<T> {
     boolean isExist(DBInfo dbInfo);
 
     /**
+     * 执行原生的SQL语句
+     * @param statement SQL语句
+     * @param arguments 参数值-占位符?的值
+     * @return 影响行数
+     */
+    int executeRaw(String statement, String... arguments);
+
+    /**
      * 清空表
      * @return 条目数
      */
     int clearTable();
+
+    /**
+     * 获取数据表DAO
+     * @return dao
+     */
+    Dao<T, Integer> fetchDao();
 
 }
