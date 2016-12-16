@@ -36,7 +36,9 @@ public class MainActivity extends AppCompatActivity {
         dao = EasyDBHelper.get().dao(SimpleData.class);
     }
 
-    @OnClick({R.id.createBtn, R.id.queryBtn, R.id.queryWhereBtn, R.id.queryPageBtn, R.id.updateBtn, R.id.deleteBtn, R.id.countBtn})
+    @OnClick({R.id.createBtn, R.id.queryBtn, R.id.queryWhereBtn, R.id.queryPageBtn,
+            R.id.updateBtn, R.id.deleteBtn, R.id.countBtn, R.id.isExistBtn,
+            R.id.clearTableBtn})
     public void onClick(View view) {
         List<SimpleData> list;
         switch (view.getId()) {
@@ -44,7 +46,11 @@ public class MainActivity extends AppCompatActivity {
                 //增加
                 List<SimpleData> addList = new ArrayList<>();
                 for (int i = 1; i <= 20; i++) {
-                    addList.add(new SimpleData(i,"信息"+i));
+                    if(i % 2 == 0){
+                        addList.add(new SimpleData(i,"信息"+i));
+                    }else{
+                        addList.add(new SimpleData(i,"我是"+i));
+                    }
                 }
                 int line = dao.create(addList);
                 tvResult.setText("增加总条数："+line);
@@ -94,6 +100,14 @@ public class MainActivity extends AppCompatActivity {
                 //条目统计
                 long num = dao.countOf(DBInfo.get().where("group1", true));
                 tvResult.setText("总条数："+num);
+                break;
+            case R.id.isExistBtn:
+                boolean isExist = dao.isExist(DBInfo.get().where("description","信息2"));
+                tvResult.setText(isExist?"存在":"不存在");
+                break;
+            case R.id.clearTableBtn:
+                int clear = dao.clearTable();
+                tvResult.setText("清空表："+clear);
                 break;
         }
     }

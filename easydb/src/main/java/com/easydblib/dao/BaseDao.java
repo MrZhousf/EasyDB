@@ -55,25 +55,25 @@ public interface BaseDao<T> {
 
     /**
      * 查询所有并排序
-     * @param DBInfo 查询信息体
+     * @param dbInfo 查询信息体
      * @return 映射类集合
      */
-    List<T> queryForAll(DBInfo DBInfo);
+    List<T> queryForAll(DBInfo dbInfo);
 
     /**
      * 多条件查询并排序
-     * @param DBInfo 查询信息体
+     * @param dbInfo 查询信息体
      * @return 映射类集合
      */
-    List<T> query(DBInfo DBInfo);
+    List<T> query(DBInfo dbInfo);
 
 
     /**
      * 分页查询
-     * @param DBInfo 查询信息体
+     * @param dbInfo 查询信息体
      * @return 映射类集合
      */
-    List<T> queryLimit(DBInfo DBInfo);
+    List<T> queryLimit(DBInfo dbInfo);
 
     /**
      * 统计条目数
@@ -83,9 +83,22 @@ public interface BaseDao<T> {
 
     /**
      * 统计条目数
-     * @param DBInfo 查询信息体
+     * @param dbInfo 查询信息体
      * @return 条目数
      */
-    long countOf(DBInfo DBInfo);
+    long countOf(DBInfo dbInfo);
+
+    /**
+     * 是否存在
+     * @param dbInfo
+     * @return true 存在  false 不存在
+     */
+    boolean isExist(DBInfo dbInfo);
+
+    /**
+     * 清空表
+     * @return 条目数
+     */
+    int clearTable();
 
 }

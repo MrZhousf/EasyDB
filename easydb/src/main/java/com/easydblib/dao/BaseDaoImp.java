@@ -8,6 +8,7 @@ import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.stmt.PreparedQuery;
 import com.j256.ormlite.stmt.QueryBuilder;
 import com.j256.ormlite.stmt.Where;
+import com.j256.ormlite.table.TableUtils;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -123,12 +124,12 @@ public class BaseDaoImp<T> implements BaseDao<T> {
     }
 
     @Override
-    public List<T> queryForAll(DBInfo info) {
+    public List<T> queryForAll(DBInfo dbInfo) {
         List<T> all = new ArrayList<T>();
         try {
             long start = getTime();
             QueryBuilder<T, Integer> queryBuilder = dao.queryBuilder();
-            orderBy(queryBuilder,info.orders);
+            orderBy(queryBuilder,dbInfo.orders);
             all =  dao.query(queryBuilder.prepare());
             doLog("queryForAll["+(getTime()-start)+"ms] 影响行数："+all.size());
         } catch (Exception e) {
@@ -138,13 +139,13 @@ public class BaseDaoImp<T> implements BaseDao<T> {
     }
 
     @Override
-    public List<T> query(DBInfo DBInfo) {
+    public List<T> query(DBInfo dbInfo) {
         List<T> all = new ArrayList<T>();
         try {
             long start = getTime();
             QueryBuilder<T, Integer> queryBuilder = dao.queryBuilder();
-            orderBy(queryBuilder, DBInfo.orders);
-            all = dao.query(fetchQueryBuilder(queryBuilder, DBInfo.wheres));
+            orderBy(queryBuilder, dbInfo.orders);
+            all = dao.query(fetchQueryBuilder(queryBuilder, dbInfo.wheres));
             doLog("query["+(getTime()-start)+"ms] 影响行数："+all.size());
         } catch (Exception e){
             e.printStackTrace();
@@ -153,21 +154,21 @@ public class BaseDaoImp<T> implements BaseDao<T> {
     }
 
     @Override
-    public List<T> queryLimit(DBInfo info) {
+    public List<T> queryLimit(DBInfo dbInfo) {
         List<T> all = new ArrayList<T>();
         try {
             long start = getTime();
             QueryBuilder<T, Integer> queryBuilder = dao.queryBuilder();
-            orderBy(queryBuilder,info.orders);
-            int offset = info.currentPage;
+            orderBy(queryBuilder,dbInfo.orders);
+            int offset = dbInfo.currentPage;
             if(offset != 0){
-                offset = (info.currentPage -1) * info.limit + info.size;
+                offset = (dbInfo.currentPage -1) * dbInfo.limit + dbInfo.size;
             }
             queryBuilder.offset((long)offset);
-            queryBuilder.limit((long)info.limit);
-            all = dao.query(fetchQueryBuilder(queryBuilder,info.wheres));
-            info.currentPage = ++info.currentPage;
-            info.size = all.size();
+            queryBuilder.limit((long)dbInfo.limit);
+            all = dao.query(fetchQueryBuilder(queryBuilder,dbInfo.wheres));
+            dbInfo.currentPage = ++dbInfo.currentPage;
+            dbInfo.size = all.size();
             doLog("queryLimit["+(getTime()-start)+"ms] 影响行数："+all.size());
         } catch (Exception e){
             e.printStackTrace();
@@ -200,7 +201,31 @@ public class BaseDaoImp<T> implements BaseDao<T> {
         return line;
     }
 
+    @Override
+    public boolean isExist(DBInfo dbInfo){
+        List<T> all = new ArrayList<T>();
+        try {
+            long start = getTime();
+            QueryBuilder<T, Integer> queryBuilder = dao.queryBuilder();
+            all = dao.query(fetchQueryBuilder(queryBuilder, dbInfo.wheres));
+            doLog("isExist["+(getTime()-start)+"ms] 影响行数："+all.size());
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return !all.isEmpty();
+    }
 
+    public int clearTable(){
+        int line = 0;
+        try {
+            long start = getTime();
+            line = TableUtils.clearTable(dao.getConnectionSource(),mClass);
+            doLog("clearTable["+(getTime()-start)+"ms] 影响行数："+line);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return line;
+    }
 
     private PreparedQuery<T> fetchQueryBuilder(QueryBuilder<T, Integer> queryBuilder, Map<String,Object> wheres) throws SQLException {
         if(!wheres.isEmpty()){
