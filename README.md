@@ -99,10 +99,10 @@ int line = dao.create(new SimpleData(1,"信息1"));
 List<SimpleData> list = dao.queryForAll();
 
 //多条件查询并排序
-List<SimpleData> list = dao.query(DBInfo.get().where("group1",true).where("group1",true).order("id", false));
+List<SimpleData> list = dao.query(WhereInfo.get().between("index",1,18).equal("group1",true).order("id", false));
  
 //分页查询-每页5条
-DBInfo info = DBInfo.get().limit(5);
+WhereInfo info = WhereInfo.get().limit(5);
 List<SimpleData> list = dao.queryLimit(info);//第一页查询
 list = dao.queryLimit(info);//第二页查询
 
@@ -113,10 +113,10 @@ dao.update(data)
 dao.delete(data)
 
 //条目统计
-long num = dao.countOf(DBInfo.get().where("group1", true));
+long num = dao.countOf(WhereInfo.get().equal("group1", true));
 
 //是否存在
-boolean isExist = dao.isExist(DBInfo.get().where("description","信息2"));
+boolean isExist = dao.isExist(WhereInfo.get().equal("description","信息2"));
 
 //清空表
 int line = dao.clearTable();
