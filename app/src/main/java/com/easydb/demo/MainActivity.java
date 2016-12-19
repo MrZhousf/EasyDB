@@ -10,7 +10,7 @@ import com.easydb.core.EasyDBHelper;
 import com.easydb.demo.model.SimpleData;
 import com.easydb.util.LogUtil;
 import com.easydblib.dao.BaseDao;
-import com.easydblib.info.DBInfo;
+import com.easydblib.info.WhereInfo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
 
     @OnClick({R.id.createBtn, R.id.queryBtn, R.id.queryWhereBtn, R.id.queryPageBtn,
             R.id.updateBtn, R.id.deleteBtn, R.id.countBtn, R.id.isExistBtn,
-            R.id.clearTableBtn})
+            R.id.clearTableBtn, R.id.likeBtn})
     public void onClick(View view) {
         List<SimpleData> list;
         switch (view.getId()) {
@@ -62,12 +62,12 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case R.id.queryWhereBtn:
                 //多条件查询并排序
-                list = dao.query(DBInfo.get().where("group1",true).where("group1",true).order("id", false));
+                list = dao.query(WhereInfo.get().between("index",1,18).equal("group1",true).order("id", false));
                 printList(list);
                 break;
             case R.id.queryPageBtn:
                 //分页查询-每页5条
-                DBInfo info = DBInfo.get().limit(5);
+                WhereInfo info = WhereInfo.get().limit(5);
                 list = dao.queryLimit(info);//第一页查询
                 printList(list);
                 List<SimpleData> listLimit = dao.queryLimit(info);//第二页查询
@@ -98,16 +98,20 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case R.id.countBtn:
                 //条目统计
-                long num = dao.countOf(DBInfo.get().where("group1", true));
+                long num = dao.countOf(WhereInfo.get().equal("group1", true));
                 tvResult.setText("总条数："+num);
                 break;
             case R.id.isExistBtn:
-                boolean isExist = dao.isExist(DBInfo.get().where("description","信息2"));
+                boolean isExist = dao.isExist(WhereInfo.get().equal("description","信息2"));
                 tvResult.setText(isExist?"存在":"不存在");
                 break;
             case R.id.clearTableBtn:
                 int clear = dao.clearTable();
                 tvResult.setText("清空表："+clear);
+                break;
+            case R.id.likeBtn:
+                list = dao.query(WhereInfo.get().like("description","我是%"));
+                printList(list);
                 break;
         }
     }

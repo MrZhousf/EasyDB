@@ -61,7 +61,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="删除"
+            android:text="删除第一条数据"
             />
     </LinearLayout>
     <LinearLayout
@@ -93,6 +93,13 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="清空表"
+            />
+        <Button
+            android:id="@+id/likeBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="模糊查询"
             />
     </LinearLayout>
     <TextView

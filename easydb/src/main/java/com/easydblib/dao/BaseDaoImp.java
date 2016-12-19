@@ -1,9 +1,10 @@
 package com.easydblib.dao;
 
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.easydblib.helper.BaseDBHelper;
-import com.easydblib.info.DBInfo;
+import com.easydblib.info.WhereInfo;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.stmt.PreparedQuery;
 import com.j256.ormlite.stmt.QueryBuilder;
@@ -124,12 +125,12 @@ public class BaseDaoImp<T> implements BaseDao<T> {
     }
 
     @Override
-    public List<T> queryForAll(DBInfo dbInfo) {
+    public List<T> queryForAll(WhereInfo whereInfo) {
         List<T> all = new ArrayList<T>();
         try {
             long start = getTime();
             QueryBuilder<T, Integer> queryBuilder = dao.queryBuilder();
-            orderBy(queryBuilder,dbInfo.orders);
+            orderBy(queryBuilder, whereInfo.orders);
             all =  dao.query(queryBuilder.prepare());
             doLog("queryForAll["+(getTime()-start)+"ms] 影响行数："+all.size());
         } catch (Exception e) {
@@ -139,13 +140,13 @@ public class BaseDaoImp<T> implements BaseDao<T> {
     }
 
     @Override
-    public List<T> query(DBInfo dbInfo) {
+    public List<T> query(WhereInfo whereInfo) {
         List<T> all = new ArrayList<T>();
         try {
             long start = getTime();
             QueryBuilder<T, Integer> queryBuilder = dao.queryBuilder();
-            orderBy(queryBuilder, dbInfo.orders);
-            all = dao.query(fetchQueryBuilder(queryBuilder, dbInfo.wheres));
+            orderBy(queryBuilder, whereInfo.orders);
+            all = dao.query(fetchQueryBuilder(queryBuilder, whereInfo));
             doLog("query["+(getTime()-start)+"ms] 影响行数："+all.size());
         } catch (Exception e){
             e.printStackTrace();
@@ -154,21 +155,21 @@ public class BaseDaoImp<T> implements BaseDao<T> {
     }
 
     @Override
-    public List<T> queryLimit(DBInfo dbInfo) {
+    public List<T> queryLimit(WhereInfo whereInfo) {
         List<T> all = new ArrayList<T>();
         try {
             long start = getTime();
             QueryBuilder<T, Integer> queryBuilder = dao.queryBuilder();
-            orderBy(queryBuilder,dbInfo.orders);
-            int offset = dbInfo.currentPage;
+            orderBy(queryBuilder, whereInfo.orders);
+            int offset = whereInfo.currentPage;
             if(offset != 0){
-                offset = (dbInfo.currentPage -1) * dbInfo.limit + dbInfo.size;
+                offset = (whereInfo.currentPage -1) * whereInfo.limit + whereInfo.size;
             }
             queryBuilder.offset((long)offset);
-            queryBuilder.limit((long)dbInfo.limit);
-            all = dao.query(fetchQueryBuilder(queryBuilder,dbInfo.wheres));
-            dbInfo.currentPage = ++dbInfo.currentPage;
-            dbInfo.size = all.size();
+            queryBuilder.limit((long) whereInfo.limit);
+            all = dao.query(fetchQueryBuilder(queryBuilder, whereInfo));
+            whereInfo.currentPage = ++whereInfo.currentPage;
+            whereInfo.size = all.size();
             doLog("queryLimit["+(getTime()-start)+"ms] 影响行数："+all.size());
         } catch (Exception e){
             e.printStackTrace();
@@ -195,14 +196,14 @@ public class BaseDaoImp<T> implements BaseDao<T> {
     }
 
     @Override
-    public long countOf(DBInfo info) {
+    public long countOf(WhereInfo info) {
         long line = 0;
         try {
             long start = getTime();
             QueryBuilder<T, Integer> queryBuilder = dao.queryBuilder();
             queryBuilder.setCountOf(true);
             if(null != info){
-                line = dao.countOf(fetchQueryBuilder(queryBuilder,info.wheres));
+                line = dao.countOf(fetchQueryBuilder(queryBuilder,info));
             }else{
                 line = dao.countOf();
             }
@@ -215,12 +216,12 @@ public class BaseDaoImp<T> implements BaseDao<T> {
     }
 
     @Override
-    public boolean isExist(DBInfo dbInfo){
+    public boolean isExist(WhereInfo whereInfo){
         List<T> all = new ArrayList<T>();
         try {
             long start = getTime();
             QueryBuilder<T, Integer> queryBuilder = dao.queryBuilder();
-            all = dao.query(fetchQueryBuilder(queryBuilder, dbInfo.wheres));
+            all = dao.query(fetchQueryBuilder(queryBuilder, whereInfo));
             doLog("isExist["+(getTime()-start)+"ms] 影响行数："+all.size());
         } catch (Exception e){
             e.printStackTrace();
@@ -258,20 +259,72 @@ public class BaseDaoImp<T> implements BaseDao<T> {
         return line;
     }
 
-    private PreparedQuery<T> fetchQueryBuilder(QueryBuilder<T, Integer> queryBuilder, Map<String,Object> wheres) throws SQLException {
+    private PreparedQuery<T> fetchQueryBuilder(QueryBuilder<T, Integer> queryBuilder, WhereInfo whereInfo) throws SQLException {
+        List<com.easydblib.info.Where> wheres = whereInfo.wheres;
         if(!wheres.isEmpty()){
             Where<T, Integer> whereBuilder = queryBuilder.where();
             boolean isFirst = true;
-            for(Map.Entry<String,Object> where : wheres.entrySet()){
-                if(isFirst){
-                    whereBuilder.eq(where.getKey(), where.getValue());
-                    isFirst = false;
-                }else{
-                    whereBuilder.and().eq(where.getKey(), where.getValue());
+            for(int i = 0; i < wheres.size(); i++){
+                com.easydblib.info.Where where = wheres.get(i);
+                if(TextUtils.isEmpty(where.name))
+                    continue;
+                // 处理and-or
+                isFirst = appendAnd(whereBuilder,where,isFirst);
+                // 等于
+                if(com.easydblib.info.Where.EQ.equals(where.op)){
+                    whereBuilder.eq(where.name, where.value);
+                }
+                // 模糊查询
+                if(com.easydblib.info.Where.LIKE.equals(where.op)){
+                    whereBuilder.like(where.name,where.value);
+                }
+                // between
+                if(com.easydblib.info.Where.BETWEEN.equals(where.op)){
+                    whereBuilder.between(where.name,where.low,where.high);
+                }
+                // lt 小于
+                if(com.easydblib.info.Where.LT.endsWith(where.op)){
+                    whereBuilder.lt(where.name, where.value);
+                }
+                // gt 大于
+                if(com.easydblib.info.Where.GT.endsWith(where.op)){
+                    whereBuilder.gt(where.name,where.value);
+                }
+                // ge 大于等于
+                if(com.easydblib.info.Where.GE.endsWith(where.op)){
+                    whereBuilder.ge(where.name,where.value);
+                }
+                // le 小于等于
+                if(com.easydblib.info.Where.LE.endsWith(where.op)){
+                    whereBuilder.le(where.name,where.value);
+                }
+                // ne 不等于
+                if(com.easydblib.info.Where.NE.endsWith(where.op)){
+                    whereBuilder.ne(where.name,where.value);
+                }
+                // in 包含
+                if(com.easydblib.info.Where.IN.endsWith(where.op)){
+                    whereBuilder.in(where.name,where.values);
+                }
+                // notIn 不包含
+                if(com.easydblib.info.Where.NOT_IN.endsWith(where.op)){
+                    whereBuilder.notIn(where.name,where.values);
                 }
             }
         }
         return queryBuilder.prepare();
+    }
+
+    private boolean appendAnd(Where<T, Integer> whereBuilder,com.easydblib.info.Where where, boolean isFirst){
+        if(!isFirst){
+            if(com.easydblib.info.Where.AND.equals(where.andOr)){
+                whereBuilder.and();
+            }
+            if(com.easydblib.info.Where.OR.endsWith(where.andOr)){
+                whereBuilder.or();
+            }
+        }
+        return false;
     }
 
     private void orderBy(QueryBuilder<T, Integer> queryBuilder, Map<String,Boolean> orders){

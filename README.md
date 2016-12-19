@@ -5,6 +5,7 @@
 * 支持主键、索引
 * 支持增、删、改、查
 * 支持多条件查询、排序、统计、清空、是否存在
+* 支持模糊查询like、between、equal、>、<、>=、<=、<>
 * 支持分页查询，分页查询只需要定义每页条数即可
 * 支持批量处理
 * 支持数据库升级，使数据库升级更为简洁
@@ -18,13 +19,13 @@
 <dependency>
   <groupId>com.zhousf.lib</groupId>
   <artifactId>easydb</artifactId>
-  <version>1.4</version>
+  <version>1.5</version>
   <type>pom</type>
 </dependency>
 ```
 ###Gradle
 ```java
-compile 'com.zhousf.lib:easydb:1.4'
+compile 'com.zhousf.lib:easydb:1.5'
 ```
 
 ##提交记录

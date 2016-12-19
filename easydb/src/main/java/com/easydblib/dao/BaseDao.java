@@ -1,7 +1,7 @@
 package com.easydblib.dao;
 
 
-import com.easydblib.info.DBInfo;
+import com.easydblib.info.WhereInfo;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.stmt.QueryBuilder;
 
@@ -57,25 +57,25 @@ public interface BaseDao<T> {
 
     /**
      * 查询所有并排序
-     * @param dbInfo 查询信息体
+     * @param whereInfo 查询信息体
      * @return 映射类集合
      */
-    List<T> queryForAll(DBInfo dbInfo);
+    List<T> queryForAll(WhereInfo whereInfo);
 
     /**
      * 多条件查询并排序
-     * @param dbInfo 查询信息体
+     * @param whereInfo 查询信息体
      * @return 映射类集合
      */
-    List<T> query(DBInfo dbInfo);
+    List<T> query(WhereInfo whereInfo);
 
 
     /**
      * 分页查询
-     * @param dbInfo 查询信息体
+     * @param whereInfo 查询信息体
      * @return 映射类集合
      */
-    List<T> queryLimit(DBInfo dbInfo);
+    List<T> queryLimit(WhereInfo whereInfo);
 
     /**
      * 自定义查询
@@ -92,17 +92,17 @@ public interface BaseDao<T> {
 
     /**
      * 统计条目数
-     * @param dbInfo 查询信息体
+     * @param whereInfo 查询信息体
      * @return 条目数
      */
-    long countOf(DBInfo dbInfo);
+    long countOf(WhereInfo whereInfo);
 
     /**
      * 是否存在
-     * @param dbInfo
+     * @param whereInfo  查询信息体
      * @return true 存在  false 不存在
      */
-    boolean isExist(DBInfo dbInfo);
+    boolean isExist(WhereInfo whereInfo);
 
     /**
      * 执行原生的SQL语句
