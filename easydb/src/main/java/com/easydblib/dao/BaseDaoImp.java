@@ -53,7 +53,7 @@ public class BaseDaoImp<T> implements BaseDao<T> {
             long start = getTime();
             line = dao.create(model);
             doLog("create["+(getTime()-start)+"ms] 影响行数："+line);
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return line;
@@ -66,7 +66,7 @@ public class BaseDaoImp<T> implements BaseDao<T> {
             long start = getTime();
             line = dao.create(list);
             doLog("create["+(getTime()-start)+"ms] 影响行数："+line);
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return line;
@@ -79,7 +79,7 @@ public class BaseDaoImp<T> implements BaseDao<T> {
             long start = getTime();
             line = dao.delete(model);
             doLog("delete["+(getTime()-start)+"ms] 影响行数："+line);
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return line;
@@ -92,7 +92,7 @@ public class BaseDaoImp<T> implements BaseDao<T> {
             long start = getTime();
             line = dao.delete(list);
             doLog("delete["+(getTime()-start)+"ms] 影响行数："+line);
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return line;
@@ -105,7 +105,7 @@ public class BaseDaoImp<T> implements BaseDao<T> {
             long start = getTime();
             line = dao.update(model);
             doLog("update["+(getTime()-start)+"ms] 影响行数："+line);
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return line;
@@ -118,7 +118,7 @@ public class BaseDaoImp<T> implements BaseDao<T> {
             long start = getTime();
             all = dao.queryForAll();
             doLog("queryForAll["+(getTime()-start)+"ms] 影响行数："+all.size());
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return all;
