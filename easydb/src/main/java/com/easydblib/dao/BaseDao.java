@@ -6,6 +6,7 @@ import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.stmt.QueryBuilder;
 
 import java.util.List;
+import java.util.concurrent.Callable;
 
 
 /**
@@ -119,9 +120,28 @@ public interface BaseDao<T> {
     int clearTable();
 
     /**
+     * 删除表
+     * @return 条目数
+     */
+    int dropTable();
+
+    /**
      * 获取数据表DAO
      * @return dao
      */
     Dao<T, Integer> fetchDao();
+
+    /**
+     * 执行事务
+     * @param callable 事务回调
+     */
+    void callInTransaction(Callable<T> callable);
+
+    /**
+     * 批处理-大量数据库操作时请采用该方法（性能最优）
+     * @param callable 回调
+     */
+    <CT> CT callBatchTasks(Callable<CT> callable);
+
 
 }

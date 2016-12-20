@@ -14,6 +14,7 @@ import com.easydblib.info.WhereInfo;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -38,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
 
     @OnClick({R.id.createBtn, R.id.queryBtn, R.id.queryWhereBtn, R.id.queryPageBtn,
             R.id.updateBtn, R.id.deleteBtn, R.id.countBtn, R.id.isExistBtn,
-            R.id.clearTableBtn, R.id.likeBtn})
+            R.id.clearTableBtn, R.id.likeBtn, R.id.batchBtn})
     public void onClick(View view) {
         List<SimpleData> list;
         switch (view.getId()) {
@@ -74,17 +75,19 @@ public class MainActivity extends AppCompatActivity {
                 printList(listLimit);
                 break;
             case R.id.updateBtn:
-                //更新
-                list = dao.queryForAll();
-                if(!list.isEmpty()){
-                    SimpleData data = list.get(0);
-                    data.description = "更新内容";
-                    if(dao.update(data)==1){
-                        tvResult.setText("更新成功");
-                    }else{
-                        tvResult.setText("更新失败");
+                //更新-采用事务方式
+                dao.callInTransaction(new Callable<SimpleData>() {
+                    @Override
+                    public SimpleData call() throws Exception {
+                        List<SimpleData> list = dao.queryForAll();
+                        if(!list.isEmpty()){
+                            SimpleData data = list.get(0);
+                            data.description = "更新内容";
+                            dao.update(data);
+                        }
+                        return null;
                     }
-                }
+                });
                 break;
             case R.id.deleteBtn:
                 list = dao.queryForAll();
@@ -112,6 +115,20 @@ public class MainActivity extends AppCompatActivity {
             case R.id.likeBtn:
                 list = dao.query(WhereInfo.get().like("description","我是%"));
                 printList(list);
+                break;
+            case R.id.batchBtn:
+                //批处理
+                dao.callBatchTasks(new Callable<SimpleData>() {
+                    @Override
+                    public SimpleData call() throws Exception {
+                        List<SimpleData> list = dao.queryForAll();
+                        for(SimpleData data : list){
+                            data.description += "_批处理";
+                            dao.update(data);
+                        }
+                        return null;
+                    }
+                });
                 break;
         }
     }

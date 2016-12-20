@@ -5,6 +5,7 @@
 * 支持主键、索引
 * 支持增、删、改、查
 * 支持多条件查询、排序、统计、清空、是否存在
+* 支持批处理、数据库事务操作
 * 支持模糊查询like、between、equal、>、<、>=、<=、<>
 * 支持分页查询，分页查询只需要定义每页条数即可
 * 支持批量处理
@@ -19,20 +20,29 @@
 <dependency>
   <groupId>com.zhousf.lib</groupId>
   <artifactId>easydb</artifactId>
-  <version>1.5</version>
+  <version>1.5.1</version>
   <type>pom</type>
 </dependency>
 ```
 ###Gradle
 ```java
-compile 'com.zhousf.lib:easydb:1.5'
+compile 'com.zhousf.lib:easydb:1.5.1'
 ```
 
 ##提交记录
 * 2016-12-15 项目提交
+* 2016-12-20 增加批处理、事务操作功能
 
 ##项目演示DEMO
 项目中已包含所有支持业务的demo，详情请下载项目参考源码。
+
+##Application中配置
+```java
+EasyDBConfig.init()
+        .showDBLog(true)//显示数据库操作日志
+        .registerHelper(EasyDBHelper.get())//注册数据库Helper-预实例化
+        .build();
+```
 
 ##自定义数据库单例
 单例模式防止频繁打开关闭数据库，从而导致数据操作性能下降，甚至出现一些异常错误。
@@ -47,7 +57,7 @@ public class EasyDBHelper extends BaseDBHelper {
 	//数据库名称
 	private static final String DB_NAME = "easy_android.db";
 
-	//数据表清单
+	//数据表清单-数据库与表的关系更直观
 	private static final Class<?>[] tables = {
 		SimpleData.class
 	};
@@ -76,6 +86,7 @@ public class EasyDBHelper extends BaseDBHelper {
 
 	@Override
 	protected boolean upgrade(int oldVersion, int newVersion) throws SQLException {
+	    //数据库升级操作
 		if(oldVersion < 2){
 			//增加字段ext
 			getDao(SimpleData.class).executeRaw("ALTER TABLE'simpledata' ADD COLUMN ext TEXT DEFAULT 'default';");
@@ -120,6 +131,36 @@ boolean isExist = dao.isExist(WhereInfo.get().equal("description","信息2"));
 
 //清空表
 int line = dao.clearTable();
+
+//批处理-批量操作消耗性能最低
+dao.callBatchTasks(new Callable<SimpleData>() {
+    @Override
+    public SimpleData call() throws Exception {
+        List<SimpleData> list = dao.queryForAll();
+        for(SimpleData data : list){
+            data.description += "_批处理";
+            dao.update(data);
+        }
+        return null;
+    }
+});
+
+//更新-采用事务方式，自动回滚
+dao.callInTransaction(new Callable<SimpleData>() {
+    @Override
+    public SimpleData call() throws Exception {
+        List<SimpleData> list = dao.queryForAll();
+        if(!list.isEmpty()){
+            SimpleData data = list.get(0);
+            data.description = "更新内容";
+            dao.update(data);
+        }
+        return null;
+    }
+});
+
+//删除表
+int clear = dao.dropTable();
 
 ```
 
@@ -234,12 +275,30 @@ public interface BaseDao<T> {
         * @return 条目数
         */
        int clearTable();
+       
+       /**
+        * 删除表
+        * @return 条目数
+        */
+       int dropTable();
    
        /**
         * 获取数据表DAO
         * @return dao
         */
        Dao<T, Integer> fetchDao();
+       
+       /**
+        * 执行事务
+        * @param callable 事务回调
+        */
+       void callInTransaction(Callable<T> callable);
+   
+       /**
+        * 批处理-大量数据库操作时请采用该方法（性能最优）
+        * @param callable 回调
+        */
+       <CT> CT callBatchTasks(Callable<CT> callable);
 
 }
 ```

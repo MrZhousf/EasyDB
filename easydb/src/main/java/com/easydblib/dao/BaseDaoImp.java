@@ -3,9 +3,11 @@ package com.easydblib.dao;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.easydblib.EasyDBConfig;
 import com.easydblib.helper.BaseDBHelper;
 import com.easydblib.info.WhereInfo;
 import com.j256.ormlite.dao.Dao;
+import com.j256.ormlite.misc.TransactionManager;
 import com.j256.ormlite.stmt.PreparedQuery;
 import com.j256.ormlite.stmt.QueryBuilder;
 import com.j256.ormlite.stmt.Where;
@@ -17,6 +19,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 /**
  * 数据库操作接口实现类
@@ -50,6 +53,7 @@ public class BaseDaoImp<T> implements BaseDao<T> {
     public int create(T model) {
         int line = 0;
         try {
+            prepareDeal();
             long start = getTime();
             line = dao.create(model);
             doLog("create["+(getTime()-start)+"ms] 影响行数："+line);
@@ -63,6 +67,7 @@ public class BaseDaoImp<T> implements BaseDao<T> {
     public int create(List<T> list) {
         int line = 0;
         try {
+            prepareDeal();
             long start = getTime();
             line = dao.create(list);
             doLog("create["+(getTime()-start)+"ms] 影响行数："+line);
@@ -76,6 +81,7 @@ public class BaseDaoImp<T> implements BaseDao<T> {
     public int delete(T model) {
         int line = 0;
         try {
+            prepareDeal();
             long start = getTime();
             line = dao.delete(model);
             doLog("delete["+(getTime()-start)+"ms] 影响行数："+line);
@@ -89,6 +95,7 @@ public class BaseDaoImp<T> implements BaseDao<T> {
     public int delete(List<T> list) {
         int line = 0;
         try {
+            prepareDeal();
             long start = getTime();
             line = dao.delete(list);
             doLog("delete["+(getTime()-start)+"ms] 影响行数："+line);
@@ -102,6 +109,7 @@ public class BaseDaoImp<T> implements BaseDao<T> {
     public int update(T model) {
         int line = 0;
         try {
+            prepareDeal();
             long start = getTime();
             line = dao.update(model);
             doLog("update["+(getTime()-start)+"ms] 影响行数："+line);
@@ -115,6 +123,7 @@ public class BaseDaoImp<T> implements BaseDao<T> {
     public List<T> queryForAll() {
         List<T> all = new ArrayList<T>();
         try {
+            prepareDeal();
             long start = getTime();
             all = dao.queryForAll();
             doLog("queryForAll["+(getTime()-start)+"ms] 影响行数："+all.size());
@@ -128,6 +137,7 @@ public class BaseDaoImp<T> implements BaseDao<T> {
     public List<T> queryForAll(WhereInfo whereInfo) {
         List<T> all = new ArrayList<T>();
         try {
+            prepareDeal();
             long start = getTime();
             QueryBuilder<T, Integer> queryBuilder = dao.queryBuilder();
             orderBy(queryBuilder, whereInfo.orders);
@@ -143,6 +153,7 @@ public class BaseDaoImp<T> implements BaseDao<T> {
     public List<T> query(WhereInfo whereInfo) {
         List<T> all = new ArrayList<T>();
         try {
+            prepareDeal();
             long start = getTime();
             QueryBuilder<T, Integer> queryBuilder = dao.queryBuilder();
             orderBy(queryBuilder, whereInfo.orders);
@@ -158,6 +169,7 @@ public class BaseDaoImp<T> implements BaseDao<T> {
     public List<T> queryLimit(WhereInfo whereInfo) {
         List<T> all = new ArrayList<T>();
         try {
+            prepareDeal();
             long start = getTime();
             QueryBuilder<T, Integer> queryBuilder = dao.queryBuilder();
             orderBy(queryBuilder, whereInfo.orders);
@@ -181,6 +193,7 @@ public class BaseDaoImp<T> implements BaseDao<T> {
     public List<T> query(QueryBuilder<T, Integer> queryBuilder){
         List<T> all = new ArrayList<T>();
         try {
+            prepareDeal();
             long start = getTime();
             all = dao.query(queryBuilder.prepare());
             doLog("query["+(getTime()-start)+"ms] 影响行数："+all.size());
@@ -199,6 +212,7 @@ public class BaseDaoImp<T> implements BaseDao<T> {
     public long countOf(WhereInfo info) {
         long line = 0;
         try {
+            prepareDeal();
             long start = getTime();
             QueryBuilder<T, Integer> queryBuilder = dao.queryBuilder();
             queryBuilder.setCountOf(true);
@@ -219,6 +233,7 @@ public class BaseDaoImp<T> implements BaseDao<T> {
     public boolean isExist(WhereInfo whereInfo){
         List<T> all = new ArrayList<T>();
         try {
+            prepareDeal();
             long start = getTime();
             QueryBuilder<T, Integer> queryBuilder = dao.queryBuilder();
             all = dao.query(fetchQueryBuilder(queryBuilder, whereInfo));
@@ -233,6 +248,7 @@ public class BaseDaoImp<T> implements BaseDao<T> {
     public int executeRaw(String statement, String... arguments) {
         int line = 0;
         try {
+            prepareDeal();
             long start = getTime();
             line = dao.executeRaw(statement,arguments);
             doLog("executeRaw["+(getTime()-start)+"ms] 影响行数："+line);
@@ -247,9 +263,11 @@ public class BaseDaoImp<T> implements BaseDao<T> {
         return dao;
     }
 
+    @Override
     public int clearTable(){
         int line = 0;
         try {
+            prepareDeal();
             long start = getTime();
             line = TableUtils.clearTable(dao.getConnectionSource(),mClass);
             doLog("clearTable["+(getTime()-start)+"ms] 影响行数："+line);
@@ -257,6 +275,60 @@ public class BaseDaoImp<T> implements BaseDao<T> {
             e.printStackTrace();
         }
         return line;
+    }
+
+    public int dropTable(){
+        int line = 0;
+        try {
+            prepareDeal();
+            long start = getTime();
+            line = TableUtils.dropTable(dao.getConnectionSource(),mClass,false);
+            doLog("dropTable["+(getTime()-start)+"ms] 影响行数："+line);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return line;
+    }
+
+    @Override
+    public void callInTransaction(Callable<T> callable){
+        TransactionManager transactionManager = new TransactionManager(dao.getConnectionSource());
+        try {
+            prepareDeal();
+            long start = getTime();
+            transactionManager.callInTransaction(callable);
+            doLog("callInTransaction["+(getTime()-start)+"ms] ");
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public <CT> CT callBatchTasks(Callable<CT> callable){
+        try {
+            prepareDeal();
+            long start = getTime();
+            CT ct =  dao.callBatchTasks(callable);
+            doLog("callBatchTasks["+(getTime()-start)+"ms] ");
+            return ct;
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private void prepareDeal(){
+        checkTable();
+    }
+
+    private void checkTable(){
+        try {
+            if(!dao.isTableExists()){
+                TableUtils.createTable(dao.getConnectionSource(),mClass);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private PreparedQuery<T> fetchQueryBuilder(QueryBuilder<T, Integer> queryBuilder, WhereInfo whereInfo) throws SQLException {
@@ -340,7 +412,8 @@ public class BaseDaoImp<T> implements BaseDao<T> {
     }
 
     private void doLog(String msg){
-        Log.d(TAG,msg+" | "+mClass.getSimpleName()+" | "+databaseName);
+        if(EasyDBConfig.showDBLog)
+            Log.d(TAG,msg+" | "+mClass.getSimpleName()+" | "+databaseName);
     }
 
 }
