@@ -4,6 +4,9 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.easydblib.EasyDBConfig;
+import com.easydblib.callback.EasyRun;
+import com.easydblib.handler.HandlerHelper;
+import com.easydblib.handler.MessageInfo;
 import com.easydblib.helper.BaseDBHelper;
 import com.easydblib.info.WhereInfo;
 import com.j256.ormlite.dao.Dao;
@@ -20,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * 数据库操作接口实现类
@@ -32,11 +37,14 @@ public class BaseDaoImp<T> implements BaseDao<T> {
     public Dao<T, Integer> dao;
     private Class<T> mClass;
     private String databaseName;
+    private static ExecutorService executorService;
 
     public BaseDaoImp(BaseDBHelper helper, Class<T> clazz) {
         mClass = clazz!=null ? clazz : initClazz();
         dao = helper.fetchDao(mClass);
         databaseName = helper.getDatabaseName();
+        if(executorService == null)
+            executorService = Executors.newCachedThreadPool();
     }
 
     private Class<T> initClazz(){
@@ -264,6 +272,12 @@ public class BaseDaoImp<T> implements BaseDao<T> {
     }
 
     @Override
+    public String getTableName() {
+        prepareDeal();
+        return dao.getTableName();
+    }
+
+    @Override
     public int clearTable(){
         int line = 0;
         try {
@@ -277,13 +291,15 @@ public class BaseDaoImp<T> implements BaseDao<T> {
         return line;
     }
 
+    @Override
     public int dropTable(){
         int line = 0;
         try {
-            prepareDeal();
-            long start = getTime();
-            line = TableUtils.dropTable(dao.getConnectionSource(),mClass,false);
-            doLog("dropTable["+(getTime()-start)+"ms] 影响行数："+line);
+            if(dao.isTableExists()){
+                long start = getTime();
+                line = TableUtils.dropTable(dao.getConnectionSource(),mClass,false);
+                doLog("dropTable["+(getTime()-start)+"ms] 影响行数："+line);
+            }
         } catch (Exception e){
             e.printStackTrace();
         }
@@ -317,10 +333,40 @@ public class BaseDaoImp<T> implements BaseDao<T> {
         return null;
     }
 
+    @Override
+    public <T> void asyncTask(final EasyRun<T> easyRun) {
+        if(null != easyRun){
+            prepareDeal();
+            executorService.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        long start = getTime();
+                        T data = easyRun.run();
+                        doLog("asyncTask["+(getTime()-start)+"ms] ");
+                        MessageInfo<T> info = new MessageInfo<T>();
+                        info.what = HandlerHelper.WHAT_CALLBACK;
+                        info.model = data;
+                        info.easyRun = easyRun;
+                        HandlerHelper.get().sendMessage(info.build());
+                    } catch (Exception e){
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+     * 预处理
+     */
     private void prepareDeal(){
         checkTable();
     }
 
+    /**
+     * 检查数据表
+     */
     private void checkTable(){
         try {
             if(!dao.isTableExists()){
@@ -331,6 +377,9 @@ public class BaseDaoImp<T> implements BaseDao<T> {
         }
     }
 
+    /**
+     * 构建查询条件
+     */
     private PreparedQuery<T> fetchQueryBuilder(QueryBuilder<T, Integer> queryBuilder, WhereInfo whereInfo) throws SQLException {
         List<com.easydblib.info.Where> wheres = whereInfo.wheres;
         if(!wheres.isEmpty()){
@@ -387,6 +436,9 @@ public class BaseDaoImp<T> implements BaseDao<T> {
         return queryBuilder.prepare();
     }
 
+    /**
+     * 追加连接符
+     */
     private boolean appendAnd(Where<T, Integer> whereBuilder,com.easydblib.info.Where where, boolean isFirst){
         if(!isFirst){
             if(com.easydblib.info.Where.AND.equals(where.andOr)){
@@ -399,6 +451,9 @@ public class BaseDaoImp<T> implements BaseDao<T> {
         return false;
     }
 
+    /**
+     * 排序
+     */
     private void orderBy(QueryBuilder<T, Integer> queryBuilder, Map<String,Boolean> orders){
         if(!orders.isEmpty()){
             for(Map.Entry<String,Boolean> order : orders.entrySet()){

@@ -9,6 +9,7 @@ import com.easydb.R;
 import com.easydb.core.EasyDBHelper;
 import com.easydb.demo.model.SimpleData;
 import com.easydb.util.LogUtil;
+import com.easydblib.callback.EasyRun;
 import com.easydblib.dao.BaseDao;
 import com.easydblib.info.WhereInfo;
 
@@ -39,7 +40,8 @@ public class MainActivity extends AppCompatActivity {
 
     @OnClick({R.id.createBtn, R.id.queryBtn, R.id.queryWhereBtn, R.id.queryPageBtn,
             R.id.updateBtn, R.id.deleteBtn, R.id.countBtn, R.id.isExistBtn,
-            R.id.clearTableBtn, R.id.likeBtn, R.id.batchBtn})
+            R.id.clearTableBtn, R.id.likeBtn, R.id.batchBtn, R.id.asyncBtn,
+            R.id.dropBtn })
     public void onClick(View view) {
         List<SimpleData> list;
         switch (view.getId()) {
@@ -90,6 +92,7 @@ public class MainActivity extends AppCompatActivity {
                 });
                 break;
             case R.id.deleteBtn:
+                //删除
                 list = dao.queryForAll();
                 if(!list.isEmpty()){
                     if(dao.delete(list.get(0))==1){
@@ -105,14 +108,17 @@ public class MainActivity extends AppCompatActivity {
                 tvResult.setText("总条数："+num);
                 break;
             case R.id.isExistBtn:
+                //是否存在
                 boolean isExist = dao.isExist(WhereInfo.get().equal("description","信息2"));
                 tvResult.setText(isExist?"存在":"不存在");
                 break;
             case R.id.clearTableBtn:
+                //清空表
                 int clear = dao.clearTable();
                 tvResult.setText("清空表："+clear);
                 break;
             case R.id.likeBtn:
+                //模糊查询
                 list = dao.query(WhereInfo.get().like("description","我是%"));
                 printList(list);
                 break;
@@ -129,6 +135,25 @@ public class MainActivity extends AppCompatActivity {
                         return null;
                     }
                 });
+                break;
+            case R.id.asyncBtn:
+                //异步任务
+                dao.asyncTask(new EasyRun<List<SimpleData>>(){
+                    //该方法在异步线程中执行
+                    @Override
+                    public List<SimpleData> run() throws Exception {
+                        return dao.queryForAll();
+                    }
+                    //该方法在UI线程中执行
+                    @Override
+                    public void onMainThread(List<SimpleData> data) throws Exception {
+                        printList(data);
+                    }
+                });
+                break;
+            case R.id.dropBtn:
+                //删除表
+                dao.dropTable();
                 break;
         }
     }

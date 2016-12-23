@@ -1,5 +1,5 @@
 # EasyDB
-基于ORMLite封装的数据库操作工具类
+基于ORMLite封装的数据库操作工具类——致力于最简洁的数据库操作API
 
 ##功能点
 * 支持主键、索引
@@ -9,6 +9,7 @@
 * 支持模糊查询like、between、equal、>、<、>=、<=、<>
 * 支持分页查询，分页查询只需要定义每页条数即可
 * 支持批量处理
+* 支持异步任务操作
 * 支持数据库升级，使数据库升级更为简洁
 * 完整的日志
 * 后续优化中...
@@ -20,18 +21,19 @@
 <dependency>
   <groupId>com.zhousf.lib</groupId>
   <artifactId>easydb</artifactId>
-  <version>1.5.1</version>
+  <version>1.6</version>
   <type>pom</type>
 </dependency>
 ```
 ###Gradle
 ```java
-compile 'com.zhousf.lib:easydb:1.5.1'
+compile 'com.zhousf.lib:easydb:1.6'
 ```
 
 ##提交记录
 * 2016-12-15 项目提交
 * 2016-12-20 增加批处理、事务操作功能
+* 2016-12-23 增加异步任务功能
 
 ##项目演示DEMO
 项目中已包含所有支持业务的demo，详情请下载项目参考源码。
@@ -161,6 +163,48 @@ dao.callInTransaction(new Callable<SimpleData>() {
 
 //删除表
 int clear = dao.dropTable();
+
+/**
+ * 异步任务方式一：在Activity/Fragment中尽量采用异步任务操作数据库
+ * 异步任务可以重写run方法和onMainThread方法，可根据业务自定义重写方式
+ **/
+dao.asyncTask(new EasyRun<List<SimpleData>>(){
+    //该方法在异步线程中执行
+    @Override
+    public List<SimpleData> run() throws Exception {
+        return dao.queryForAll();
+    }
+    //该方法在UI线程中执行
+    @Override
+    public void onMainThread(List<SimpleData> data) throws Exception {
+        printList(data);
+    }
+});
+//异步任务方式二
+dao.asyncTask(new EasyRun<Object>(){
+    @Override
+    public Object run() throws Exception {
+        return dao.queryForAll();
+    }
+
+    @Override
+    public void onMainThread(Object data) throws Exception {
+        printList((List<SimpleData>)data);
+    }
+});
+//异步任务方式三
+dao.asyncTask(new EasyRun<SimpleData>(){
+    @Override
+    public SimpleData run() throws Exception {
+        return dao.queryForAll().get(0);
+    }
+
+    @Override
+    public void onMainThread(SimpleData data) throws Exception {
+        tvResult.setText(data.toString());
+    }
+});
+
 
 ```
 
@@ -299,6 +343,12 @@ public interface BaseDao<T> {
         * @param callable 回调
         */
        <CT> CT callBatchTasks(Callable<CT> callable);
+       
+       /**
+        * 异步执行
+        * @param easyRun 异步run
+        */
+       <T> void asyncTask(EasyRun<T> easyRun);
 
 }
 ```

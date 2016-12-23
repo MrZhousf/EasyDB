@@ -1,6 +1,7 @@
 package com.easydblib.dao;
 
 
+import com.easydblib.callback.EasyRun;
 import com.easydblib.info.WhereInfo;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.stmt.QueryBuilder;
@@ -132,6 +133,12 @@ public interface BaseDao<T> {
     Dao<T, Integer> fetchDao();
 
     /**
+     * 获取表名
+     * @return 表名
+     */
+    String getTableName();
+
+    /**
      * 执行事务
      * @param callable 事务回调
      */
@@ -143,5 +150,10 @@ public interface BaseDao<T> {
      */
     <CT> CT callBatchTasks(Callable<CT> callable);
 
+    /**
+     * 异步执行
+     * @param easyRun 异步run
+     */
+    <T> void asyncTask(EasyRun<T> easyRun);
 
 }
