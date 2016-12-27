@@ -142,7 +142,7 @@ public class BaseDaoImp<T> implements BaseDao<T> {
                 line = dao.create(model);
             }else{
                 //存在则更新
-                model = CompareUtil.compare(model,data);
+                model = CompareUtil.castModel(model,data);
                 line = dao.update(model);
             }
             doLog("update["+(getTime()-start)+"ms] 影响行数："+line);

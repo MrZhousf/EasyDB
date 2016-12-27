@@ -13,18 +13,19 @@ public class CompareUtil {
 
 
     /**
-     * 比较两个实体并返回新实体
+     * 将from赋值给to
      * @param from 赋值的model
      * @param to 被赋值的model
      * @return to
      */
-    public static <T> T compare(T from,T to) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException, NoSuchFieldException{
+    public static <T> T castModel(T from,T to) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException, NoSuchFieldException{
         if(to != null && from != null){
             Field[] field_obj = from.getClass().getDeclaredFields();
             for(Field field : field_obj){
                 // 获取属性的名字
                 String name = field.getName();
                 if(!name.equals("serialVersionUID")){
+                    field.setAccessible(true);
                     Object value_obj = field.get(from);
                     Object value_dbObj = field.get(to);
                     DatabaseField type = field.getAnnotation(DatabaseField.class);
