@@ -6,10 +6,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 
 /**
- * 比较工具
+ * 转换工具
  * @author : zhousf
  */
-public class CompareUtil {
+public class CastUtil {
 
 
     /**
@@ -26,17 +26,18 @@ public class CompareUtil {
                 String name = field.getName();
                 if(!name.equals("serialVersionUID")){
                     field.setAccessible(true);
-                    Object value_obj = field.get(from);
-                    Object value_dbObj = field.get(to);
+                    Object value_from = field.get(from);
+                    Object value_to = field.get(to);
                     DatabaseField type = field.getAnnotation(DatabaseField.class);
                     //判断是否主键
-                    if(type == null || !type.generatedId())
-                        //比较两个实体的属性值是否一致
-                        if(value_obj!=null && (value_dbObj == null ||!value_dbObj.toString().trim().equals(value_obj.toString().trim()))){
-                            Field field_dbObj = to.getClass().getDeclaredField(name);
-                            field_dbObj.setAccessible(true);
-                            field_dbObj.set(to, value_obj);
+                    if(type == null || !type.generatedId()){
+                        //赋值
+                        if(value_from!=null && (value_to == null ||!value_to.toString().trim().equals(value_from.toString().trim()))){
+                            Field field_toObj = to.getClass().getDeclaredField(name);
+                            field_toObj.setAccessible(true);
+                            field_toObj.set(to, value_from);
                         }
+                    }
                 }
             }
             return to;

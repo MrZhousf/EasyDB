@@ -38,11 +38,18 @@ public interface BaseDao<T> {
     int delete(T model);
 
     /**
-     * 更新集合
+     * 删除集合
      * @param list 映射类集合
      * @return 影响行数
      */
     int delete(List<T> list);
+
+    /**
+     * 根据条件删除
+     * @param whereInfo 查询信息体
+     * @return 影响行数
+     */
+    int delete(WhereInfo whereInfo);
 
     /**
      * 更新
@@ -52,7 +59,7 @@ public interface BaseDao<T> {
     int update(T model);
 
     /**
-     * 更新-根据查询条件进行更新，只更新第一条数据
+     * 更新-根据查询条件进行更新，只更新第一条数据，若无则添加
      * @param model 映射类
      * @param whereInfo 查询信息体
      * @return 影响行数

@@ -9,11 +9,12 @@ import com.easydblib.handler.HandlerHelper;
 import com.easydblib.handler.MessageInfo;
 import com.easydblib.helper.BaseDBHelper;
 import com.easydblib.info.WhereInfo;
-import com.easydblib.util.CompareUtil;
+import com.easydblib.util.CastUtil;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.misc.TransactionManager;
-import com.j256.ormlite.stmt.PreparedQuery;
+import com.j256.ormlite.stmt.DeleteBuilder;
 import com.j256.ormlite.stmt.QueryBuilder;
+import com.j256.ormlite.stmt.StatementBuilder;
 import com.j256.ormlite.stmt.Where;
 import com.j256.ormlite.table.TableUtils;
 
@@ -115,6 +116,22 @@ public class BaseDaoImp<T> implements BaseDao<T> {
     }
 
     @Override
+    public int delete(WhereInfo whereInfo) {
+        int line = 0;
+        try {
+            long start = getTime();
+            prepareDeal();
+            DeleteBuilder<T, Integer> deleteBuilder = dao.deleteBuilder();
+            deleteBuilder = (DeleteBuilder<T, Integer>)fetchQueryBuilder(deleteBuilder, whereInfo);
+            line = dao.delete(deleteBuilder.prepare());
+            doLog("update["+(getTime()-start)+"ms] 影响行数："+line);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return line;
+    }
+
+    @Override
     public int update(T model) {
         int line = 0;
         try {
@@ -136,13 +153,14 @@ public class BaseDaoImp<T> implements BaseDao<T> {
             prepareDeal();
             QueryBuilder<T,Integer> queryBuilder = dao.queryBuilder();
             //获取第一条数据
-            T data =  dao.queryForFirst(fetchQueryBuilder(queryBuilder, whereInfo));
+            queryBuilder = (QueryBuilder<T, Integer>)fetchQueryBuilder(queryBuilder, whereInfo);
+            T data =  dao.queryForFirst(queryBuilder.prepare());
             //若不存在则添加
             if(data == null){
                 line = dao.create(model);
             }else{
                 //存在则更新
-                model = CompareUtil.castModel(model,data);
+                model = CastUtil.castModel(model,data);
                 line = dao.update(model);
             }
             doLog("update["+(getTime()-start)+"ms] 影响行数："+line);
@@ -190,7 +208,8 @@ public class BaseDaoImp<T> implements BaseDao<T> {
             prepareDeal();
             QueryBuilder<T, Integer> queryBuilder = dao.queryBuilder();
             orderBy(queryBuilder, whereInfo.orders);
-            all = dao.query(fetchQueryBuilder(queryBuilder, whereInfo));
+            queryBuilder = (QueryBuilder<T, Integer>)fetchQueryBuilder(queryBuilder, whereInfo);
+            all = dao.query(queryBuilder.prepare());
             doLog("query["+(getTime()-start)+"ms] 影响行数："+all.size());
         } catch (Exception e){
             e.printStackTrace();
@@ -212,7 +231,8 @@ public class BaseDaoImp<T> implements BaseDao<T> {
             }
             queryBuilder.offset((long)offset);
             queryBuilder.limit((long) whereInfo.limit);
-            all = dao.query(fetchQueryBuilder(queryBuilder, whereInfo));
+            queryBuilder = (QueryBuilder<T, Integer>)fetchQueryBuilder(queryBuilder, whereInfo);
+            all = dao.query(queryBuilder.prepare());
             whereInfo.currentPage = ++whereInfo.currentPage;
             whereInfo.size = all.size();
             doLog("queryLimit["+(getTime()-start)+"ms] 影响行数："+all.size());
@@ -242,15 +262,16 @@ public class BaseDaoImp<T> implements BaseDao<T> {
     }
 
     @Override
-    public long countOf(WhereInfo info) {
+    public long countOf(WhereInfo whereInfo) {
         long line = 0;
         try {
             long start = getTime();
             prepareDeal();
             QueryBuilder<T, Integer> queryBuilder = dao.queryBuilder();
             queryBuilder.setCountOf(true);
-            if(null != info){
-                line = dao.countOf(fetchQueryBuilder(queryBuilder,info));
+            if(null != whereInfo){
+                queryBuilder = (QueryBuilder<T, Integer>)fetchQueryBuilder(queryBuilder, whereInfo);
+                line = dao.countOf(queryBuilder.prepare());
             }else{
                 line = dao.countOf();
             }
@@ -269,7 +290,8 @@ public class BaseDaoImp<T> implements BaseDao<T> {
             long start = getTime();
             prepareDeal();
             QueryBuilder<T, Integer> queryBuilder = dao.queryBuilder();
-            all = dao.query(fetchQueryBuilder(queryBuilder, whereInfo));
+            queryBuilder = (QueryBuilder<T, Integer>)fetchQueryBuilder(queryBuilder, whereInfo);
+            all = dao.query(queryBuilder.prepare());
             doLog("isExist["+(getTime()-start)+"ms] 影响行数："+all.size());
         } catch (Exception e){
             e.printStackTrace();
@@ -405,7 +427,7 @@ public class BaseDaoImp<T> implements BaseDao<T> {
     /**
      * 构建查询条件
      */
-    private PreparedQuery<T> fetchQueryBuilder(QueryBuilder<T, Integer> queryBuilder, WhereInfo whereInfo) throws SQLException {
+    private StatementBuilder<T,Integer> fetchQueryBuilder(StatementBuilder<T, Integer> queryBuilder, WhereInfo whereInfo) throws SQLException {
         List<com.easydblib.info.Where> wheres = whereInfo.wheres;
         if(!wheres.isEmpty()){
             Where<T, Integer> whereBuilder = queryBuilder.where();
@@ -458,7 +480,7 @@ public class BaseDaoImp<T> implements BaseDao<T> {
                 }
             }
         }
-        return queryBuilder.prepare();
+        return queryBuilder;
     }
 
     /**

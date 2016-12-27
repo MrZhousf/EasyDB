@@ -21,20 +21,20 @@
 <dependency>
   <groupId>com.zhousf.lib</groupId>
   <artifactId>easydb</artifactId>
-  <version>1.6.1</version>
+  <version>1.6.3</version>
   <type>pom</type>
 </dependency>
 ```
 ###Gradle
 ```java
-compile 'com.zhousf.lib:easydb:1.6.1'
+compile 'com.zhousf.lib:easydb:1.6.3'
 ```
 
 ##提交记录
 * 2016-12-15 项目提交
 * 2016-12-20 增加批处理、事务操作功能
 * 2016-12-23 增加异步任务功能
-* 2016-12-27 扩展更新操作
+* 2016-12-27 扩展更新、删除操作
 
 ##项目演示DEMO
 项目中已包含所有支持业务的demo，详情请下载项目参考源码。
