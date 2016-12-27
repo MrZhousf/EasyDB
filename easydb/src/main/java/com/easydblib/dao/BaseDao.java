@@ -52,6 +52,14 @@ public interface BaseDao<T> {
     int update(T model);
 
     /**
+     * 更新-根据查询条件进行更新，只更新第一条数据
+     * @param model 映射类
+     * @param whereInfo 查询信息体
+     * @return 影响行数
+     */
+    int update(T model,WhereInfo whereInfo);
+
+    /**
      * 查询所有
      * @return 映射类集合
      */
