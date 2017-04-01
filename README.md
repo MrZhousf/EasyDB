@@ -1,7 +1,7 @@
 # EasyDB
 基于ORMLite封装的数据库操作工具类——致力于最简洁的数据库操作API
 
-##功能点
+## 功能点
 * 支持主键、索引
 * 支持增、删、改、查
 * 支持多条件查询、排序、统计、清空、是否存在
@@ -15,9 +15,9 @@
 * 后续优化中...
 
 
-##引用方式
-###Maven
-```java
+## 引用方式
+### Maven
+```
 <dependency>
   <groupId>com.zhousf.lib</groupId>
   <artifactId>easydb</artifactId>
@@ -25,29 +25,29 @@
   <type>pom</type>
 </dependency>
 ```
-###Gradle
-```java
+### Gradle
+```
 compile 'com.zhousf.lib:easydb:1.6.3'
 ```
 
-##提交记录
+## 提交记录
 * 2016-12-15 项目提交
 * 2016-12-20 增加批处理、事务操作功能
 * 2016-12-23 增加异步任务功能
 * 2016-12-27 扩展更新、删除操作
 
-##项目演示DEMO
+## 项目演示DEMO
 项目中已包含所有支持业务的demo，详情请下载项目参考源码。
 
-##Application中配置
-```java
+## Application中配置
+```
 EasyDBConfig.init()
         .showDBLog(true)//显示数据库操作日志
         .registerHelper(EasyDBHelper.get())//注册数据库Helper-预实例化
         .build();
 ```
 
-##自定义数据库单例
+## 自定义数据库单例
 单例模式防止频繁打开关闭数据库，从而导致数据操作性能下降，甚至出现一些异常错误。
 自定义数据库单例继承BaseDBHelper，BaseDBHelper进行数据库操作的缓存管理
 ```java
@@ -101,8 +101,8 @@ public class EasyDBHelper extends BaseDBHelper {
 
 ```
 
-##数据库操作方法
-```java
+## 数据库操作方法
+```
 //获取数据库操作接口
 BaseDao<SimpleData> dao = EasyDBHelper.get().dao(SimpleData.class);
 
@@ -209,7 +209,7 @@ dao.asyncTask(new EasyRun<SimpleData>(){
 
 ```
 
-##数据库操作接口
+## 数据库操作接口
 ```java
 /**
  * 数据库操作接口
@@ -354,17 +354,17 @@ public interface BaseDao<T> {
 }
 ```
 
-##相关截图
-###基本操作界面
+## 相关截图
+### 基本操作界面
 ![](https://github.com/MrZhousf/EasyDB/blob/master/pic/1.jpg?raw=true)
 
-##有问题反馈
+## 有问题反馈
 在使用中有任何问题，欢迎反馈给我，可以用以下联系方式跟我交流
 
 * QQ: 424427633
 
 
-##感激
+## 感激
 感谢以下的项目,排名不分先后
 
 * [ORMLite](https://github.com/j256/ormlite-android) 
