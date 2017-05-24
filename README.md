@@ -21,13 +21,13 @@
 <dependency>
   <groupId>com.zhousf.lib</groupId>
   <artifactId>easydb</artifactId>
-  <version>1.6.3</version>
+  <version>1.6.5</version>
   <type>pom</type>
 </dependency>
 ```
 ### Gradle
 ```
-compile 'com.zhousf.lib:easydb:1.6.3'
+compile 'com.zhousf.lib:easydb:1.6.5'
 ```
 
 ## 提交记录
@@ -35,6 +35,7 @@ compile 'com.zhousf.lib:easydb:1.6.3'
 * 2016-12-20 增加批处理、事务操作功能
 * 2016-12-23 增加异步任务功能
 * 2016-12-27 扩展更新、删除操作
+* 2017-5-23 优化结构，采用动态代理方式
 
 ## 项目演示DEMO
 项目中已包含所有支持业务的demo，详情请下载项目参考源码。
@@ -43,6 +44,7 @@ compile 'com.zhousf.lib:easydb:1.6.3'
 ```
 EasyDBConfig.init()
         .showDBLog(true)//显示数据库操作日志
+        .setLogTAG("EASY_DB")//日志显示标识
         .registerHelper(EasyDBHelper.get())//注册数据库Helper-预实例化
         .build();
 ```
@@ -107,10 +109,10 @@ public class EasyDBHelper extends BaseDBHelper {
 BaseDao<SimpleData> dao = EasyDBHelper.get().dao(SimpleData.class);
 
 //增加
-int line = dao.create(new SimpleData(1,"信息1"));
+int line = dao.add(new SimpleData(1,"信息1"));
 
 //查询所有
-List<SimpleData> list = dao.queryForAll();
+List<SimpleData> list = dao.queryAll();
 
 //多条件查询并排序
 List<SimpleData> list = dao.query(WhereInfo.get().between("index",1,18).equal("group1",true).order("id", false));
@@ -139,7 +141,7 @@ int line = dao.clearTable();
 dao.callBatchTasks(new Callable<SimpleData>() {
     @Override
     public SimpleData call() throws Exception {
-        List<SimpleData> list = dao.queryForAll();
+        List<SimpleData> list = dao.queryAll();
         for(SimpleData data : list){
             data.description += "_批处理";
             dao.update(data);
@@ -152,7 +154,7 @@ dao.callBatchTasks(new Callable<SimpleData>() {
 dao.callInTransaction(new Callable<SimpleData>() {
     @Override
     public SimpleData call() throws Exception {
-        List<SimpleData> list = dao.queryForAll();
+        List<SimpleData> list = dao.queryAll();
         if(!list.isEmpty()){
             SimpleData data = list.get(0);
             data.description = "更新内容";
@@ -173,7 +175,7 @@ dao.asyncTask(new EasyRun<List<SimpleData>>(){
     //该方法在异步线程中执行
     @Override
     public List<SimpleData> run() throws Exception {
-        return dao.queryForAll();
+        return dao.queryAll();
     }
     //该方法在UI线程中执行
     @Override
@@ -185,7 +187,7 @@ dao.asyncTask(new EasyRun<List<SimpleData>>(){
 dao.asyncTask(new EasyRun<Object>(){
     @Override
     public Object run() throws Exception {
-        return dao.queryForAll();
+        return dao.queryAll();
     }
 
     @Override
@@ -197,7 +199,7 @@ dao.asyncTask(new EasyRun<Object>(){
 dao.asyncTask(new EasyRun<SimpleData>(){
     @Override
     public SimpleData run() throws Exception {
-        return dao.queryForAll().get(0);
+        return dao.queryAll().get(0);
     }
 
     @Override
@@ -211,146 +213,297 @@ dao.asyncTask(new EasyRun<SimpleData>(){
 
 ## 数据库操作接口
 ```java
+package com.easydblib.dao;
+import com.easydblib.callback.EasyRun;
+import com.easydblib.info.WhereInfo;
+import com.j256.ormlite.dao.Dao;
+import com.j256.ormlite.stmt.QueryBuilder;
+import java.util.List;
+import java.util.concurrent.Callable;
+
 /**
  * 数据库操作接口
  * @author : zhousf
  */
 public interface BaseDao<T> {
 
-     /**
-        * 增加
-        * @param model 映射类
-        * @return 影响行数
-        */
-       int create(T model);
-   
-       /**
-        * 增加集合
-        * @param list 映射类集合
-        * @return 影响行数
-        */
-       int create(List<T> list);
-   
-       /**
-        * 删除
-        * @param model 映射类
-        * @return 影响行数
-        */
-       int delete(T model);
-   
-       /**
-        * 更新集合
-        * @param list 映射类集合
-        * @return 影响行数
-        */
-       int delete(List<T> list);
-   
-       /**
-        * 更新
-        * @param model 映射类
-        * @return 影响行数
-        */
-       int update(T model);
-   
-       /**
-        * 查询所有
-        * @return 映射类集合
-        */
-       List<T> queryForAll();
-   
-       /**
-        * 查询所有并排序
-        * @param whereInfo 查询信息体
-        * @return 映射类集合
-        */
-       List<T> queryForAll(WhereInfo whereInfo);
-   
-       /**
-        * 多条件查询并排序
-        * @param whereInfo 查询信息体
-        * @return 映射类集合
-        */
-       List<T> query(WhereInfo whereInfo);
-   
-   
-       /**
-        * 分页查询
-        * @param whereInfo 查询信息体
-        * @return 映射类集合
-        */
-       List<T> queryLimit(WhereInfo whereInfo);
-   
-       /**
-        * 自定义查询
-        * @param queryBuilder 查询构建
-        * @return 映射类集合
-        */
-       List<T> query(QueryBuilder<T, Integer> queryBuilder);
-   
-       /**
-        * 统计条目数
-        * @return 条目数
-        */
-       long countOf();
-   
-       /**
-        * 统计条目数
-        * @param whereInfo 查询信息体
-        * @return 条目数
-        */
-       long countOf(WhereInfo whereInfo);
-   
-       /**
-        * 是否存在
-        * @param whereInfo  查询信息体
-        * @return true 存在  false 不存在
-        */
-       boolean isExist(WhereInfo whereInfo);
-   
-       /**
-        * 执行原生的SQL语句
-        * @param statement SQL语句
-        * @param arguments 参数值-占位符?的值
-        * @return 影响行数
-        */
-       int executeRaw(String statement, String... arguments);
-   
-       /**
-        * 清空表
-        * @return 条目数
-        */
-       int clearTable();
-       
-       /**
-        * 删除表
-        * @return 条目数
-        */
-       int dropTable();
-   
-       /**
-        * 获取数据表DAO
-        * @return dao
-        */
-       Dao<T, Integer> fetchDao();
-       
-       /**
-        * 执行事务
-        * @param callable 事务回调
-        */
-       void callInTransaction(Callable<T> callable);
-   
-       /**
-        * 批处理-大量数据库操作时请采用该方法（性能最优）
-        * @param callable 回调
-        */
-       <CT> CT callBatchTasks(Callable<CT> callable);
-       
-       /**
-        * 异步执行
-        * @param easyRun 异步run
-        */
-       <T> void asyncTask(EasyRun<T> easyRun);
+    /**
+     * 增加
+     * @param model 映射类
+     * @return 影响行数
+     */
+    int add(T model);
 
+    /**
+     * 增加集合
+     * @param list 映射类集合
+     * @return 影响行数
+     */
+    int add(List<T> list);
+
+    /**
+     * 增加或更新
+     * @param model 映射类
+     * @return 影响行数
+     */
+    int addOrUpdate(T model);
+
+    /**
+     * 不存在时增加
+     * @param model 映射类
+     * @return 增加的对象
+     */
+    T addIfNotExists(T model);
+
+    /**
+     * 删除
+     * @param model 映射类
+     * @return 影响行数
+     */
+    int delete(T model);
+
+    /**
+     * 删除集合
+     * @param list 映射类集合
+     * @return 影响行数
+     */
+    int delete(List<T> list);
+
+    /**
+     * 根据条件删除
+     * @param whereInfo 查询信息体
+     * @return 影响行数
+     */
+    int delete(WhereInfo whereInfo);
+
+    /**
+     * 更新
+     * @param model 映射类
+     * @return 影响行数
+     */
+    int update(T model);
+
+    /**
+     * 更新-根据查询条件进行更新，只更新第一条数据，若无则添加
+     * @param model 映射类
+     * @param whereInfo 查询信息体
+     * @return 影响行数
+     */
+    int update(T model,WhereInfo whereInfo);
+
+    /**
+     * 查询所有
+     * @return 映射类集合
+     */
+    List<T> queryAll();
+
+    /**
+     * 查询所有并排序
+     * @param whereInfo 查询信息体
+     * @return 映射类集合
+     */
+    List<T> queryAll(WhereInfo whereInfo);
+
+    /**
+     * 多条件查询并排序
+     * @param whereInfo 查询信息体
+     * @return 映射类集合
+     */
+    List<T> query(WhereInfo whereInfo);
+
+
+    /**
+     * 分页查询
+     * @param whereInfo 查询信息体
+     * @return 映射类集合
+     */
+    List<T> queryLimit(WhereInfo whereInfo);
+
+    /**
+     * 自定义查询
+     * @param queryBuilder 查询构建
+     * @return 映射类集合
+     */
+    List<T> query(QueryBuilder<T, Integer> queryBuilder);
+
+    /**
+     * 统计条目数
+     * @return 条目数
+     */
+    long countOf();
+
+    /**
+     * 统计条目数
+     * @param whereInfo 查询信息体
+     * @return 条目数
+     */
+    long countOf(WhereInfo whereInfo);
+
+    /**
+     * 是否存在
+     * @param whereInfo  查询信息体
+     * @return true 存在  false 不存在
+     */
+    boolean isExist(WhereInfo whereInfo);
+
+    /**
+     * 执行原生的SQL语句
+     * @param statement SQL语句
+     * @param arguments 参数值-占位符?的值
+     * @return 影响行数
+     */
+    int executeRaw(String statement, String... arguments);
+
+    /**
+     * 清空表
+     * @return 条目数
+     */
+    int clearTable();
+
+    /**
+     * 删除表
+     * @return 条目数
+     */
+    int dropTable();
+
+    /**
+     * 获取数据表DAO
+     * @return dao
+     */
+    Dao<T, Integer> fetchDao();
+
+    /**
+     * 获取表名
+     * @return 表名
+     */
+    String getTableName();
+
+    /**
+     * 执行事务
+     * @param callable 事务回调
+     */
+    void callInTransaction(Callable<T> callable);
+
+    /**
+     * 批处理-大量数据库操作时请采用该方法（性能最优）
+     * @param callable 回调
+     */
+    <CT> CT callBatchTasks(Callable<CT> callable);
+
+    /**
+     * 异步执行
+     * @param easyRun 异步run
+     */
+    <T> void asyncTask(EasyRun<T> easyRun);
+
+}
+
+```
+
+## 数据库操作代理类
+```java
+package com.easydblib.handler;
+import android.util.Log;
+import com.easydblib.EasyDBConfig;
+import com.easydblib.dao.RealBaseDao;
+import com.j256.ormlite.dao.Dao;
+import com.j256.ormlite.table.TableUtils;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.util.List;
+
+/**
+ * @author : zhousf
+ * @description : 数据库操作代理类：主要进行预处理、日志打印
+ * @date : 2017/5/23.
+ */
+public class EasyDBProxyHandler<T> implements InvocationHandler {
+
+    private Object obj;
+    private Dao<T, Integer> dao;
+    private Class<T> mClass;
+    private String databaseName;
+
+    public EasyDBProxyHandler(Dao<T, Integer> dao, Class<T> mClass, String databaseName) {
+        this.dao = dao;
+        this.mClass = mClass;
+        this.databaseName = databaseName;
+    }
+
+    public RealBaseDao<T> getProxy(Object targetObject) {
+        this.obj = targetObject;
+        Object proxy = Proxy.newProxyInstance(targetObject.getClass().getClassLoader(),
+                targetObject.getClass().getInterfaces(), this);
+        return (RealBaseDao<T>)proxy;
+    }
+
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        long startTime = getTime();
+        doBefore();
+        Object result = method.invoke(obj, args);
+        doAfter(method,result,startTime);
+        return result;
+    }
+
+    /**
+     * 执行前操作
+     */
+    private void doBefore(){
+        prepareDeal();
+    }
+
+    /**
+     * 执行后操作
+     */
+    private void doAfter(Method method, Object result, long startTime){
+        if(result != null){
+            String methodName = method.getName();
+            if(result instanceof Integer || result instanceof Long){
+                String line = String.valueOf(result);
+                doLog(methodName+"["+(getTime()-startTime)+"ms] 影响行数："+line);
+            }else if(result instanceof List){
+                int line = ((List) result).size();
+                doLog(methodName+"["+(getTime()-startTime)+"ms] 影响行数："+line);
+            }else if(result instanceof Boolean){
+                String res = String.valueOf(result);
+                doLog(methodName+"["+(getTime()-startTime)+"ms] ："+res);
+            }else {
+                doLog(methodName+"["+(getTime()-startTime)+"ms] ");
+            }
+        }
+    }
+
+    /**
+     * 预处理
+     */
+    private void prepareDeal(){
+        checkTable();
+    }
+
+    /**
+     * 检查数据表
+     */
+    private void checkTable(){
+        try {
+            TableUtils.createTableIfNotExists(dao.getConnectionSource(),mClass);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private long getTime(){
+        return System.currentTimeMillis();
+    }
+
+    /**
+     * 打印日志
+     */
+    private void doLog(String msg){
+        if(EasyDBConfig.showDBLog)
+            Log.d(EasyDBConfig.logTAG,msg+" | "+mClass.getSimpleName()+" | "+databaseName);
+    }
 }
 ```
 

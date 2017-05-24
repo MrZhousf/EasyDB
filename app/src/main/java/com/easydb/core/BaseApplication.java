@@ -22,6 +22,7 @@ public class BaseApplication extends Application {
         baseApplication = this;
         EasyDBConfig.init()
                 .showDBLog(true)//显示数据库操作日志
+                .setLogTAG("EASY_DB")//日志显示标识
                 .registerHelper(EasyDBHelper.get())//注册数据库Helper-预实例化
                 .build();
     }

@@ -1,11 +1,11 @@
 package com.easydb.demo;
 
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.TextView;
 
 import com.easydb.R;
+import com.easydb.core.BaseActivity;
 import com.easydb.core.EasyDBHelper;
 import com.easydb.demo.model.SimpleData;
 import com.easydb.util.LogUtil;
@@ -18,10 +18,9 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import butterknife.Bind;
-import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity {
 
     private final String TAG = this.getClass().getSimpleName();
 
@@ -31,10 +30,13 @@ public class MainActivity extends AppCompatActivity {
     BaseDao<SimpleData> dao;
 
     @Override
+    protected int initLayout() {
+        return R.layout.activity_main;
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        ButterKnife.bind(this);
         dao = EasyDBHelper.get().dao(SimpleData.class);
     }
 
@@ -55,12 +57,12 @@ public class MainActivity extends AppCompatActivity {
                         addList.add(new SimpleData(i,"我是"+i));
                     }
                 }
-                int line = dao.create(addList);
+                int line = dao.add(addList);
                 tvResult.setText("增加总条数："+line);
                 break;
             case R.id.queryBtn:
                 //查询
-                list = dao.queryForAll();
+                list = dao.queryAll();
                 printList(list);
                 break;
             case R.id.queryWhereBtn:
@@ -81,10 +83,11 @@ public class MainActivity extends AppCompatActivity {
                 dao.callInTransaction(new Callable<SimpleData>() {
                     @Override
                     public SimpleData call() throws Exception {
-                        List<SimpleData> list = dao.queryForAll();
+                        List<SimpleData> list = dao.queryAll();
                         if(!list.isEmpty()){
                             SimpleData data = list.get(0);
                             data.description = "更新内容";
+                            data.index = 500;
                             dao.update(data);
                         }
                         return null;
@@ -93,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case R.id.deleteBtn:
                 //删除
-                list = dao.queryForAll();
+                list = dao.queryAll();
                 if(!list.isEmpty()){
                     if(dao.delete(list.get(0))==1){
                         tvResult.setText("删除成功");
@@ -127,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
                 dao.callBatchTasks(new Callable<SimpleData>() {
                     @Override
                     public SimpleData call() throws Exception {
-                        List<SimpleData> list = dao.queryForAll();
+                        List<SimpleData> list = dao.queryAll();
                         for(SimpleData data : list){
                             data.description += "_批处理";
                             dao.update(data);
@@ -142,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
                     //该方法在异步线程中执行
                     @Override
                     public List<SimpleData> run() throws Exception {
-                        return dao.queryForAll();
+                        return dao.queryAll();
                     }
                     //该方法在UI线程中执行
                     @Override
@@ -169,10 +172,5 @@ public class MainActivity extends AppCompatActivity {
         tvResult.setText(builder.toString());
     }
 
-    @Override
-    protected void onDestroy() {
-        ButterKnife.unbind(this);
-        super.onDestroy();
-    }
 
 }

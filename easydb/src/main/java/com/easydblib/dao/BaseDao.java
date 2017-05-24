@@ -21,14 +21,28 @@ public interface BaseDao<T> {
      * @param model 映射类
      * @return 影响行数
      */
-    int create(T model);
+    int add(T model);
 
     /**
      * 增加集合
      * @param list 映射类集合
      * @return 影响行数
      */
-    int create(List<T> list);
+    int add(List<T> list);
+
+    /**
+     * 增加或更新
+     * @param model 映射类
+     * @return 影响行数
+     */
+    int addOrUpdate(T model);
+
+    /**
+     * 不存在时增加
+     * @param model 映射类
+     * @return 增加的对象
+     */
+    T addIfNotExists(T model);
 
     /**
      * 删除
@@ -70,14 +84,14 @@ public interface BaseDao<T> {
      * 查询所有
      * @return 映射类集合
      */
-    List<T> queryForAll();
+    List<T> queryAll();
 
     /**
      * 查询所有并排序
      * @param whereInfo 查询信息体
      * @return 映射类集合
      */
-    List<T> queryForAll(WhereInfo whereInfo);
+    List<T> queryAll(WhereInfo whereInfo);
 
     /**
      * 多条件查询并排序

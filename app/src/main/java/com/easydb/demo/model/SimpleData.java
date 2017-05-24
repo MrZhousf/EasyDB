@@ -8,7 +8,7 @@ import java.util.Date;
 /**
  * A simple demonstration object we are creating and persisting to the database.
  */
-public class SimpleData {
+public class SimpleData extends BaseModel {
 
 	@DatabaseField(generatedId = true)
 	public int id;
@@ -25,6 +25,7 @@ public class SimpleData {
 	@DatabaseField
 	public String ext;
 
+	//必须有无参构造方法
 	public SimpleData() {
 	}
 
@@ -34,6 +35,7 @@ public class SimpleData {
 		this.description = description;
 		this.group1 = ((index % 2) == 0);
 		this.group2 = ((index % 4) == 0);
+		super.father = "基类"+index;
 	}
 
 	@Override
@@ -47,6 +49,7 @@ public class SimpleData {
 		sb.append(", ").append("group1=").append(group1);
 		sb.append(", ").append("group2=").append(group2);
 		sb.append(", ").append("ext=").append(ext);
+		sb.append(", ").append("father=").append(super.father);
 		return sb.toString();
 	}
 }
