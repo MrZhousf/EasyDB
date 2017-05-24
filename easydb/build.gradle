@@ -30,7 +30,6 @@ tasks.withType(Javadoc) {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.j256.ormlite:ormlite-android:5.0'
-    compile 'com.android.support:support-annotations:23.+'
 }
 
 apply from: "bintrayUpload.gradle"

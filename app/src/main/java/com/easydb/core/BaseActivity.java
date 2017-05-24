@@ -119,10 +119,10 @@ public abstract class BaseActivity extends AppCompatActivity implements
      */
     private void showMissingPermissionDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(R.string.map_notifyTitle);
-        builder.setMessage(R.string.map_notifyMsg);
+        builder.setTitle(R.string.db_notifyTitle);
+        builder.setMessage(R.string.db_notifyMsg);
         // 拒绝, 退出应用
-        builder.setNegativeButton(R.string.map_cancel,
+        builder.setNegativeButton(R.string.db_cancel,
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -130,7 +130,7 @@ public abstract class BaseActivity extends AppCompatActivity implements
                     }
                 });
 
-        builder.setPositiveButton(R.string.map_setting,
+        builder.setPositiveButton(R.string.db_setting,
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
