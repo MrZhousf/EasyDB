@@ -3,7 +3,7 @@ package com.easydblib.handler;
 import android.util.Log;
 
 import com.easydblib.EasyDBConfig;
-import com.easydblib.dao.RealBaseDao;
+import com.easydblib.dao.BaseDao;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.table.TableUtils;
 
@@ -31,11 +31,11 @@ public class EasyDBProxyHandler<T> implements InvocationHandler {
         this.databaseName = databaseName;
     }
 
-    public RealBaseDao<T> getProxy(Object targetObject) {
+    public BaseDao<T> getProxy(Object targetObject) {
         this.obj = targetObject;
         Object proxy = Proxy.newProxyInstance(targetObject.getClass().getClassLoader(),
                 targetObject.getClass().getInterfaces(), this);
-        return (RealBaseDao<T>)proxy;
+        return (BaseDao<T>)proxy;
     }
 
     @Override

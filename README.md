@@ -21,13 +21,13 @@
 <dependency>
   <groupId>com.zhousf.lib</groupId>
   <artifactId>easydb</artifactId>
-  <version>1.6.6</version>
+  <version>1.6.7</version>
   <type>pom</type>
 </dependency>
 ```
 ### Gradle
 ```
-compile 'com.zhousf.lib:easydb:1.6.6'
+compile 'com.zhousf.lib:easydb:1.6.7'
 ```
 
 ## 提交记录
