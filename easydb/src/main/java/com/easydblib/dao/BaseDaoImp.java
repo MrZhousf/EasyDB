@@ -20,7 +20,7 @@ public class BaseDaoImp<T> implements BaseDao<T> {
 
     private Dao<T, Integer> dao;
 
-    private RealBaseDao<T> baseDao;
+    private BaseDao<T> baseDao;
 
     public BaseDaoImp(BaseDBHelper helper, Class<T> clazz) {
         try {
