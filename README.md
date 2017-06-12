@@ -2,6 +2,7 @@
 基于ORMLite封装的数据库操作工具类——致力于最简洁的数据库操作API
 
 ## 功能点
+* 支持自定义数据库路径：SD卡或系统
 * 支持主键、索引
 * 支持增、删、改、查
 * 支持多条件查询、排序、统计、清空、是否存在
@@ -21,13 +22,13 @@
 <dependency>
   <groupId>com.zhousf.lib</groupId>
   <artifactId>easydb</artifactId>
-  <version>1.6.7</version>
+  <version>1.6.8</version>
   <type>pom</type>
 </dependency>
 ```
 ### Gradle
 ```
-compile 'com.zhousf.lib:easydb:1.6.7'
+compile 'com.zhousf.lib:easydb:1.6.8'
 ```
 
 ## 提交记录
@@ -35,7 +36,8 @@ compile 'com.zhousf.lib:easydb:1.6.7'
 * 2016-12-20 增加批处理、事务操作功能
 * 2016-12-23 增加异步任务功能
 * 2016-12-27 扩展更新、删除操作
-* 2017-5-23 优化结构，采用动态代理方式
+* 2017-05-23 优化结构，采用动态代理方式
+* 2017-06-12 增加自定义数据库路径功能
 
 ## 项目演示DEMO
 项目中已包含所有支持业务的demo，详情请下载项目参考源码。
@@ -45,7 +47,6 @@ compile 'com.zhousf.lib:easydb:1.6.7'
 EasyDBConfig.init()
         .showDBLog(true)//显示数据库操作日志
         .setLogTAG("EASY_DB")//日志显示标识
-        .registerHelper(EasyDBHelper.get())//注册数据库Helper-预实例化
         .build();
 ```
 
@@ -58,6 +59,9 @@ public class EasyDBHelper extends BaseDBHelper {
 
 	//版本号
 	private static final int DB_VERSION = 2;
+
+    //数据库存放路径
+    private static final String DB_PATH = Environment.getExternalStorageDirectory() + "/easy_db";
 
 	//数据库名称
 	private static final String DB_NAME = "easy_android.db";
@@ -81,7 +85,10 @@ public class EasyDBHelper extends BaseDBHelper {
 	}
 
 	private EasyDBHelper() {
-		super(BaseApplication.getApplication(),DB_NAME, null, DB_VERSION, tables);
+        //系统数据库
+        //super(BaseApplication.getApplication(), null,DB_NAME,DB_VERSION,tables);
+        //SD卡数据库
+        super(BaseApplication.getApplication(), DB_PATH,DB_NAME,DB_VERSION,tables);
 	}
 
 	@Override

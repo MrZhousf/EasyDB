@@ -6,6 +6,7 @@ import android.util.Log;
 
 import com.easydblib.dao.BaseDao;
 import com.easydblib.dao.BaseDaoImp;
+import com.easydblib.util.CheckUtil;
 import com.j256.ormlite.android.apptools.OrmLiteSqliteOpenHelper;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.support.ConnectionSource;
@@ -35,10 +36,21 @@ public abstract class BaseDBHelper extends OrmLiteSqliteOpenHelper {
      */
 	protected abstract boolean upgrade(int oldVersion, int newVersion) throws SQLException;
 
-	public BaseDBHelper(Context context, String databaseName,
-						SQLiteDatabase.CursorFactory factory, int databaseVersion,
+
+	/**
+	 * 数据库构造方法
+	 * @param context 上下文
+	 * @param databasePath 数据库路径：若为空则系统保存数据库
+	 * @param databaseName 数据库名称
+	 * @param databaseVersion 数据库版本
+     * @param modelClasses 表
+     */
+	public BaseDBHelper(Context context, String databasePath, String databaseName,
+						int databaseVersion,
 						Class<?>[] modelClasses) {
-		super(context.getApplicationContext(), databaseName, factory, databaseVersion);
+		//若SD卡不存在则为系统数据库
+		super(CheckUtil.checkSD(databasePath) ? new DatabaseSDContext(context.getApplicationContext(),databasePath) : context.getApplicationContext(),
+				databaseName, null, databaseVersion);
 		this.modelClasses = modelClasses;
 	}
 

@@ -1,10 +1,5 @@
 package com.easydblib;
 
-import com.easydblib.helper.BaseDBHelper;
-
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * EasyDB配置
  * @author : zhousf
@@ -28,10 +23,9 @@ public class EasyDBConfig {
 
         private boolean showDBLog;//是否显示数据库操作日志
         private String logTAG;//日志显示标识
-        private List<BaseDBHelper> helpers;
 
         public Builder() {
-            helpers = new ArrayList<>();
+
         }
 
         public EasyDBConfig build(){
@@ -53,20 +47,6 @@ public class EasyDBConfig {
          */
         public Builder setLogTAG(String logTAG){
             this.logTAG = logTAG;
-            return this;
-        }
-
-        /**
-         * 注册DBHelper
-         * @param helper 数据库Helper
-         */
-        public Builder registerHelper(BaseDBHelper helper){
-            helpers.add(helper);
-            return this;
-        }
-
-        public Builder registerHelpers(List<BaseDBHelper> helpers){
-            helpers.addAll(helpers);
             return this;
         }
 
