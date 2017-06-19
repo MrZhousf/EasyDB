@@ -19,6 +19,8 @@ public class Where {
     public final static String IN = "in";//包含
     public final static String NOT_IN = "notIn";//不包含
     public final static String INIT = "init";//初始化
+    public final static String UPDATE = "update";//更新
+
 
     public String andOr = AND;//连接符
     public String op = INIT;//操作符

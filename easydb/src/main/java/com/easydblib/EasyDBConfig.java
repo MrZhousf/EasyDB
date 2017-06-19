@@ -7,7 +7,7 @@ package com.easydblib;
 
 public class EasyDBConfig {
 
-    public static boolean showDBLog;
+    public static boolean showDBLog = true;
     public static String logTAG = "EasyDB";
 
     public static Builder init() {

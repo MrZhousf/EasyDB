@@ -2,6 +2,7 @@ package com.easydblib.dao;
 
 
 import com.easydblib.callback.EasyRun;
+import com.easydblib.info.OrderInfo;
 import com.easydblib.info.WhereInfo;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.stmt.QueryBuilder;
@@ -73,12 +74,10 @@ public interface BaseDao<T> {
     int update(T model);
 
     /**
-     * 更新-根据查询条件进行更新，只更新第一条数据，若无则添加
-     * @param model 映射类
-     * @param whereInfo 查询信息体
-     * @return 影响行数
+     * 更新
+     * @param whereInfo 更新条件
      */
-    int update(T model,WhereInfo whereInfo);
+    int update(WhereInfo whereInfo);
 
     /**
      * 查询所有
@@ -88,10 +87,10 @@ public interface BaseDao<T> {
 
     /**
      * 查询所有并排序
-     * @param whereInfo 查询信息体
+     * @param orderInfo 排序信息体
      * @return 映射类集合
      */
-    List<T> queryAll(WhereInfo whereInfo);
+    List<T> queryAll(OrderInfo orderInfo);
 
     /**
      * 多条件查询并排序
@@ -159,7 +158,7 @@ public interface BaseDao<T> {
      * 获取数据表DAO
      * @return dao
      */
-    Dao<T, Integer> fetchDao();
+    Dao<T, Long> fetchDao();
 
     /**
      * 获取表名

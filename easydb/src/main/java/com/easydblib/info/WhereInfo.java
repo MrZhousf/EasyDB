@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 数据操作信息体
+ * 数据库操作条件
  * @author : zhousf
  */
 public class WhereInfo {
@@ -67,6 +67,14 @@ public class WhereInfo {
      */
     public WhereInfo or(){
         isOr = true;
+        return this;
+    }
+
+    /**
+     * 更新
+     */
+    public WhereInfo update(String name, Object value){
+        wheres.add(Where.get(andOr(),Where.UPDATE,name,value));
         return this;
     }
 

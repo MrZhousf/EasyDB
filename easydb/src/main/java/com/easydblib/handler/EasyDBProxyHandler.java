@@ -3,39 +3,39 @@ package com.easydblib.handler;
 import android.util.Log;
 
 import com.easydblib.EasyDBConfig;
-import com.easydblib.dao.BaseDao;
+import com.easydblib.dao.RealBaseDao;
+import com.easydblib.info.Result;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.table.TableUtils;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.List;
 
 /**
  * @author : zhousf
  * @description : 数据库操作代理类：主要进行预处理、日志打印
  * @date : 2017/5/23.
  */
-
+@SuppressWarnings(value = "all")
 public class EasyDBProxyHandler<T> implements InvocationHandler {
 
     private Object obj;
-    private Dao<T, Integer> dao;
+    private Dao<T, Long> dao;
     private Class<T> mClass;
     private String databaseName;
 
-    public EasyDBProxyHandler(Dao<T, Integer> dao, Class<T> mClass, String databaseName) {
+    public EasyDBProxyHandler(Dao<T, Long> dao, Class<T> mClass, String databaseName) {
         this.dao = dao;
         this.mClass = mClass;
         this.databaseName = databaseName;
     }
 
-    public BaseDao<T> getProxy(Object targetObject) {
+    public RealBaseDao<T> getProxy(Object targetObject) {
         this.obj = targetObject;
         Object proxy = Proxy.newProxyInstance(targetObject.getClass().getClassLoader(),
                 targetObject.getClass().getInterfaces(), this);
-        return (BaseDao<T>)proxy;
+        return (RealBaseDao<T>)proxy;
     }
 
     @Override
@@ -59,18 +59,28 @@ public class EasyDBProxyHandler<T> implements InvocationHandler {
      */
     private void doAfter(Method method, Object result, long startTime){
         if(result != null){
-            String methodName = method.getName();
-            if(result instanceof Integer || result instanceof Long){
-                String line = String.valueOf(result);
-                doLog(methodName+"["+(getTime()-startTime)+"ms] 影响行数："+line);
-            }else if(result instanceof List){
-                int line = ((List) result).size();
-                doLog(methodName+"["+(getTime()-startTime)+"ms] 影响行数："+line);
-            }else if(result instanceof Boolean){
-                String res = String.valueOf(result);
-                doLog(methodName+"["+(getTime()-startTime)+"ms] ："+res);
-            }else {
-                doLog(methodName+"["+(getTime()-startTime)+"ms] ");
+            if(result instanceof Result){
+                Result<T> real = (Result<T>) result;
+                String methodName = method.getName();
+                if(Result.LINE == real.getType()){
+                    showLog(methodName+"["+(getTime()-startTime)+"ms] 影响行数："+real.getLine());
+                }else if(Result.COUNT == real.getType()){
+                    showLog(methodName+"["+(getTime()-startTime)+"ms] 影响行数："+real.getCount());
+                }else if(Result.LIST == real.getType()){
+                    showLog(methodName+"["+(getTime()-startTime)+"ms] 影响行数："+real.getList().size());
+                }else if(Result.IS_EXIST == real.getType()){
+                    showLog(methodName+"["+(getTime()-startTime)+"ms] ："+real.isExist());
+                }else{
+                    showLog(methodName+"["+(getTime()-startTime)+"ms] ");
+                }
+                //异常处理
+                Exception exception = real.getException();
+                if(exception != null){
+                    if(exception instanceof ClassCastException){
+                        showErr("列值类型不正确："+ exception.getMessage());
+                    }
+                    exception.printStackTrace();
+                }
             }
         }
     }
@@ -87,7 +97,9 @@ public class EasyDBProxyHandler<T> implements InvocationHandler {
      */
     private void checkTable(){
         try {
-            TableUtils.createTableIfNotExists(dao.getConnectionSource(),mClass);
+            if(!dao.isTableExists()){
+                TableUtils.createTableIfNotExists(dao.getConnectionSource(),mClass);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -100,9 +112,14 @@ public class EasyDBProxyHandler<T> implements InvocationHandler {
     /**
      * 打印日志
      */
-    private void doLog(String msg){
+    private void showLog(String msg){
         if(EasyDBConfig.showDBLog)
             Log.d(EasyDBConfig.logTAG,msg+" | "+mClass.getSimpleName()+" | "+databaseName);
+    }
+
+    private void showErr(String msg){
+        if(EasyDBConfig.showDBLog)
+            Log.e(EasyDBConfig.logTAG,msg+" | "+mClass.getSimpleName()+" | "+databaseName);
     }
 
 

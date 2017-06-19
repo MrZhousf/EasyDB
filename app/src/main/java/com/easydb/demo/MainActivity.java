@@ -11,6 +11,7 @@ import com.easydb.demo.model.SimpleData;
 import com.easydb.util.LogUtil;
 import com.easydblib.callback.EasyRun;
 import com.easydblib.dao.BaseDao;
+import com.easydblib.info.OrderInfo;
 import com.easydblib.info.WhereInfo;
 
 import java.util.ArrayList;
@@ -62,7 +63,7 @@ public class MainActivity extends BaseActivity {
                 break;
             case R.id.queryBtn:
                 //查询
-                list = dao.queryAll();
+                list = dao.queryAll(OrderInfo.get().order("id",false));
                 printList(list);
                 break;
             case R.id.queryWhereBtn:

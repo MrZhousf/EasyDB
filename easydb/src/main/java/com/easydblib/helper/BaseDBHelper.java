@@ -84,8 +84,8 @@ public abstract class BaseDBHelper extends OrmLiteSqliteOpenHelper {
 	}
 
 
-	public <T> Dao<T,Integer> fetchDao(Class<T> clazz) {
-		Dao<T,Integer> dao = null;
+	public <T> Dao<T,Long> fetchDao(Class<T> clazz) {
+		Dao<T,Long> dao = null;
 		try {
 			String className = clazz.getSimpleName();
 			if (!daoMap.containsKey(className)) {

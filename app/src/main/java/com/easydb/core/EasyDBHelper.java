@@ -60,6 +60,10 @@ public class EasyDBHelper extends BaseDBHelper {
 			//增加字段ext
 			getDao(SimpleData.class).executeRaw("ALTER TABLE'simpledata' ADD COLUMN ext TEXT DEFAULT 'default';");
 		}
+		if(oldVersion < 3){
+			//增加字段sta
+			getDao(SimpleData.class).executeRaw("ALTER TABLE'simpledata' ADD COLUMN sta TEXT DEFAULT 'default';");
+		}
 		return true;
 	}
 

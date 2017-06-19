@@ -12,7 +12,7 @@
 * 支持批量处理
 * 支持异步任务操作
 * 支持数据库升级，使数据库升级更为简洁
-* 完整的日志
+* 完整的日志与异常处理
 * 后续优化中...
 
 
@@ -22,13 +22,13 @@
 <dependency>
   <groupId>com.zhousf.lib</groupId>
   <artifactId>easydb</artifactId>
-  <version>1.6.8</version>
+  <version>1.7.0</version>
   <type>pom</type>
 </dependency>
 ```
 ### Gradle
 ```
-compile 'com.zhousf.lib:easydb:1.6.8'
+compile 'com.zhousf.lib:easydb:1.7.0'
 ```
 
 ## 提交记录
