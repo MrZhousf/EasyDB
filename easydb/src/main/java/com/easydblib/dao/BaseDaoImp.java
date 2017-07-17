@@ -28,7 +28,7 @@ public class BaseDaoImp<T> implements BaseDao<T> {
             Class<T> mClass = clazz!=null ? clazz : initClazz();
             String databaseName = helper.getDatabaseName();
             dao = helper.fetchDao(mClass);
-            baseDao = new EasyDBProxyHandler<T>(dao,mClass,databaseName).getProxy(new RealBaseDaoImpl<>(dao));
+            baseDao = new EasyDBProxyHandler<T>(helper,dao,mClass,databaseName).getProxy(new RealBaseDaoImpl<>(dao));
         } catch (Exception e){
             e.printStackTrace();
         }

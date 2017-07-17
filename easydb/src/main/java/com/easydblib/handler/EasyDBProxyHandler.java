@@ -1,9 +1,12 @@
 package com.easydblib.handler;
 
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteDiskIOException;
 import android.util.Log;
 
 import com.easydblib.EasyDBConfig;
 import com.easydblib.dao.RealBaseDao;
+import com.easydblib.helper.BaseDBHelper;
 import com.easydblib.info.Result;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.table.TableUtils;
@@ -11,6 +14,7 @@ import com.j256.ormlite.table.TableUtils;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.sql.SQLException;
 
 /**
  * @author : zhousf
@@ -21,11 +25,13 @@ import java.lang.reflect.Proxy;
 public class EasyDBProxyHandler<T> implements InvocationHandler {
 
     private Object obj;
+    private BaseDBHelper helper;
     private Dao<T, Long> dao;
     private Class<T> mClass;
     private String databaseName;
 
-    public EasyDBProxyHandler(Dao<T, Long> dao, Class<T> mClass, String databaseName) {
+    public EasyDBProxyHandler(BaseDBHelper helper,Dao<T, Long> dao, Class<T> mClass, String databaseName) {
+        this.helper = helper;
         this.dao = dao;
         this.mClass = mClass;
         this.databaseName = databaseName;
@@ -101,7 +107,23 @@ public class EasyDBProxyHandler<T> implements InvocationHandler {
                 TableUtils.createTableIfNotExists(dao.getConnectionSource(),mClass);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            if(e instanceof SQLiteDiskIOException){
+                //当用户误删除.db数据库文件时进行数据库恢复(若.db-journal日志文件删除则无法恢复)
+//                helper.onOpen(helper.getWritableDatabase());
+                SQLiteDatabase db = helper.getWritableDatabase();
+                helper.getWritableDatabase().openOrCreateDatabase(db.getPath(),null);
+                try {
+                    dao = helper.getDao(mClass);
+                    if(!dao.isTableExists()){
+                        TableUtils.createTableIfNotExists(dao.getConnectionSource(),mClass);
+                    }
+                } catch (SQLException e1) {
+                    e1.printStackTrace();
+                }
+                showErr("恢复数据库："+databaseName);
+            }else{
+                e.printStackTrace();
+            }
         }
     }
 

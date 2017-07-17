@@ -57,8 +57,6 @@ public class DatabaseSDContext extends ContextWrapper {
     @Override
     public SQLiteDatabase openOrCreateDatabase(String name, int mode, SQLiteDatabase.CursorFactory factory, DatabaseErrorHandler errorHandler) {
         return SQLiteDatabase.openOrCreateDatabase(getDatabasePath(name), null);
-
-
     }
 
 
