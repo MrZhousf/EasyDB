@@ -113,7 +113,7 @@ public class MainActivity extends BaseActivity {
                 break;
             case R.id.isExistBtn:
                 //是否存在
-                boolean isExist = dao.isExist(WhereInfo.get().equal("description","信息2"));
+                boolean isExist = dao.isExist(WhereInfo.get().equal("description","信息1"));
                 tvResult.setText(isExist?"存在":"不存在");
                 break;
             case R.id.clearTableBtn:

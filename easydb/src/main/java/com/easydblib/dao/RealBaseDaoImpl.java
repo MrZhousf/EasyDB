@@ -251,13 +251,12 @@ public class RealBaseDaoImpl<T> implements RealBaseDao<T> {
 
     @Override
     public Result<T> isExist(WhereInfo whereInfo){
-        List<T> all = new ArrayList<T>();
         Result<T> result = new Result<>(Result.IS_EXIST);
         try {
             QueryBuilder<T, Long> queryBuilder = dao.queryBuilder();
             queryBuilder = (QueryBuilder<T, Long>)fetchQueryBuilder(queryBuilder, whereInfo);
-            all = dao.query(queryBuilder.prepare());
-            result.setExist(!all.isEmpty());
+            queryBuilder.setCountOf(true);
+            result.setExist(dao.countOf(queryBuilder.prepare())>0);
         } catch (Exception e){
             result.setException(e);
         }
