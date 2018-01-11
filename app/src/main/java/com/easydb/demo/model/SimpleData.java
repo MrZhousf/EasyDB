@@ -1,5 +1,6 @@
 package com.easydb.demo.model;
 
+import com.easydblib.annotation.TableModel;
 import com.j256.ormlite.field.DatabaseField;
 
 import java.text.SimpleDateFormat;
@@ -8,7 +9,10 @@ import java.util.Date;
 /**
  * A simple demonstration object we are creating and persisting to the database.
  */
-public class SimpleData extends BaseModel {
+@TableModel
+public class SimpleData extends BaseModel{
+
+	public static final String ID = "id";
 
 	@DatabaseField(generatedId = true)
 	public int id;
@@ -16,6 +20,12 @@ public class SimpleData extends BaseModel {
 	public int index;
 	@DatabaseField
 	public String description;
+	@DatabaseField
+	public double myDouble;
+	@DatabaseField
+	public float myFloat;
+	@DatabaseField
+	public long myLong;
 	@DatabaseField
 	public Date date;
 	@DatabaseField
@@ -35,6 +45,9 @@ public class SimpleData extends BaseModel {
 		this.description = description;
 		this.group1 = ((index % 2) == 0);
 		this.group2 = ((index % 4) == 0);
+		this.myDouble = 5.0;
+		this.myFloat = 2;
+		this.myLong = 6;
 		super.father = "基类"+index;
 	}
 

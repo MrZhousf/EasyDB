@@ -1,7 +1,10 @@
 # EasyDB
-基于ORMLite封装的数据库操作工具类——致力于最简洁的数据库操作API
+基于ORMLite封装的数据库操作工具类——致力于最简洁的数据库操作API。
+由于目前流行的数据框架（如Realm、GreenDAO、ObjectBox）在做项目模块架构时都无法使得表模型分散，表管理统一的架构设计，
+所以本框架还是从SQLite出发，综合考量Android Studio应用架构设计思想通过技术封装以实现该目标。
 
 ## 功能点
+* 支持Android Studio多个Module表模型分散，表管理统一
 * 支持自定义数据库路径：SD卡或系统
 * 支持主键、索引
 * 支持增、删、改、查
@@ -22,13 +25,13 @@
 <dependency>
   <groupId>com.zhousf.lib</groupId>
   <artifactId>easydb</artifactId>
-  <version>1.7.2</version>
+  <version>1.7.5</version>
   <type>pom</type>
 </dependency>
 ```
 ### Gradle
 ```
-compile 'com.zhousf.lib:easydb:1.7.2'
+compile 'com.zhousf.lib:easydb:1.7.5'
 ```
 
 ## 提交记录
@@ -38,82 +41,37 @@ compile 'com.zhousf.lib:easydb:1.7.2'
 * 2016-12-27 扩展更新、删除操作
 * 2017-05-23 优化结构，采用动态代理方式
 * 2017-06-12 增加自定义数据库路径功能
+* 2018-01-11 支持Android Studio多个Module表模型分散，表管理统一
 
 ## 项目演示DEMO
 项目中已包含所有支持业务的demo，详情请下载项目参考源码。
 
 ## Application中配置
 ```
-EasyDBConfig.init()
-        .showDBLog(true)//显示数据库操作日志
-        .setLogTAG("EASY_DB")//日志显示标识
-        .build();
+        DBHelper.builder()
+                .setDbPath(Environment.getExternalStorageDirectory() + "/easy_db")//数据库保存路径
+                .setDbName("easy")//数据库名称
+                .setDbVersion(1)//数据库版本号
+                .showDBLog(true)//显示数据库操作日志
+                .setLogTAG("EASY_DB")//日志显示标识
+                .build(this);
+        DBHelper.builder().onUpgrade(new IUpgrade() {
+            @Override
+            public void upgrade(DBHelper dbHelper, int oldVersion, int newVersion) throws SQLException {
+                Log.d("upgrade","oldVersion="+oldVersion+",newVersion="+newVersion);
+                if(oldVersion < 2){
+                    //增加字段ext
+                    dbHelper.addColumn(SimpleData.class,"ext",String.class,"100");
+                }
+            }
+        });
 ```
 
-## 自定义数据库单例
-单例模式防止频繁打开关闭数据库，从而导致数据操作性能下降，甚至出现一些异常错误。
-自定义数据库单例继承BaseDBHelper，BaseDBHelper进行数据库操作的缓存管理
-```java
-// 数据库辅助类
-public class EasyDBHelper extends BaseDBHelper {
-
-	//版本号
-	private static final int DB_VERSION = 2;
-
-    //数据库存放路径
-    private static final String DB_PATH = Environment.getExternalStorageDirectory() + "/easy_db";
-
-	//数据库名称
-	private static final String DB_NAME = "easy_android.db";
-
-	//数据表清单-数据库与表的关系更直观
-	private static final Class<?>[] tables = {
-		SimpleData.class
-	};
-
-	private static EasyDBHelper helper = null;
-
-	public static EasyDBHelper get(){
-		if(null == helper){
-			synchronized (EasyDBHelper.class){
-				if(null == helper){
-					helper = new EasyDBHelper();
-				}
-			}
-		}
-		return helper;
-	}
-
-	private EasyDBHelper() {
-        //系统数据库
-        //super(BaseApplication.getApplication(), null,DB_NAME,DB_VERSION,tables);
-        //SD卡数据库
-        super(BaseApplication.getApplication(), DB_PATH,DB_NAME,DB_VERSION,tables);
-	}
-
-	@Override
-	protected BaseDBHelper initHelper() {
-		return get();
-	}
-
-	@Override
-	protected boolean upgrade(int oldVersion, int newVersion) throws SQLException {
-	    //数据库升级操作
-		if(oldVersion < 2){
-			//增加字段ext
-			getDao(SimpleData.class).executeRaw("ALTER TABLE'simpledata' ADD COLUMN ext TEXT DEFAULT 'default';");
-		}
-		return true;
-	}
-
-}
-
-```
 
 ## 数据库操作方法
 ```
 //获取数据库操作接口
-BaseDao<SimpleData> dao = EasyDBHelper.get().dao(SimpleData.class);
+BaseDao<SimpleData> dao = DBHelper.get().dao(SimpleData.class);
 
 //增加
 int line = dao.add(new SimpleData(1,"信息1"));
@@ -219,7 +177,10 @@ dao.asyncTask(new EasyRun<SimpleData>(){
 ```
 
 ## 数据库操作方法
+支持Android Studio多个Module表模型分散，表管理统一时请在表类中增加@TableModel注解，这样不同module的表都可以存放在自己模块下，框架会自动注册应用中所有module的表。
+
 ```java
+@TableModel
 public class SimpleData extends BaseModel {
 
 	@DatabaseField(generatedId = true)

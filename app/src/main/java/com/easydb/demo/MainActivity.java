@@ -6,11 +6,11 @@ import android.widget.TextView;
 
 import com.easydb.R;
 import com.easydb.core.BaseActivity;
-import com.easydb.core.EasyDBHelper;
 import com.easydb.demo.model.SimpleData;
 import com.easydb.util.LogUtil;
 import com.easydblib.callback.EasyRun;
 import com.easydblib.dao.BaseDao;
+import com.easydblib.helper.DBHelper;
 import com.easydblib.info.OrderInfo;
 import com.easydblib.info.WhereInfo;
 
@@ -38,7 +38,7 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        dao = EasyDBHelper.get().dao(SimpleData.class);
+        dao = DBHelper.get().dao(SimpleData.class);
     }
 
     @OnClick({R.id.createBtn, R.id.queryBtn, R.id.queryWhereBtn, R.id.queryPageBtn,

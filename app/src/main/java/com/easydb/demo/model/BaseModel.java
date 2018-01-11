@@ -8,7 +8,6 @@ import com.j256.ormlite.field.DatabaseField;
  * @Author:
  * @Date: 2016-12-28
  */
-
 public class BaseModel {
 
     @DatabaseField

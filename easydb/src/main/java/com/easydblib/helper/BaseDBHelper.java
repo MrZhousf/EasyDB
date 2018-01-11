@@ -13,6 +13,8 @@ import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -23,13 +25,11 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public abstract class BaseDBHelper extends OrmLiteSqliteOpenHelper {
 
-	private Class<?>[] modelClasses;
+	private List<Class<?>> modelClasses = new ArrayList<>();
 
 	private Map<String,Dao> daoMap = new ConcurrentHashMap<>();
 
 	private Map<String,BaseDaoImp> helperMap = new ConcurrentHashMap<>();
-
-	protected abstract BaseDBHelper initHelper();
 
 	/**
 	 * 自定义数据库升级：true自定义，false默认升级（删除所有表并重新创建）
@@ -47,13 +47,16 @@ public abstract class BaseDBHelper extends OrmLiteSqliteOpenHelper {
      */
 	public BaseDBHelper(Context context, String databasePath, String databaseName,
 						int databaseVersion,
-						Class<?>[] modelClasses) {
+						List<Class<?>> modelClasses) {
 		//若SD卡不存在则为系统数据库
 		super(CheckUtil.checkSD(databasePath) ? new DatabaseSDContext(context.getApplicationContext(),databasePath) : context.getApplicationContext(),
 				databaseName, null, databaseVersion);
-		this.modelClasses = modelClasses;
+		for(Class<?> table : modelClasses){
+			if(!this.modelClasses.contains(table)){
+				this.modelClasses.add(table);
+			}
+		}
 	}
-
 
 	@Override
 	public void onCreate(SQLiteDatabase database, ConnectionSource connectionSource) {
@@ -71,6 +74,7 @@ public abstract class BaseDBHelper extends OrmLiteSqliteOpenHelper {
 	public void onUpgrade(SQLiteDatabase database, ConnectionSource connectionSource, int oldVersion, int newVersion) {
 		try {
 			if(!upgrade(oldVersion,newVersion)){
+				//默认升级（删除所有表并重新创建）
 				for (Class<?> clazz: modelClasses) {
 					TableUtils.dropTable(connectionSource, clazz, true);
 				}
@@ -83,7 +87,7 @@ public abstract class BaseDBHelper extends OrmLiteSqliteOpenHelper {
 		}
 	}
 
-
+	@SuppressWarnings(value = "unchecked")
 	public <T> Dao<T,Long> fetchDao(Class<T> clazz) {
 		Dao<T,Long> dao = null;
 		try {
@@ -100,10 +104,11 @@ public abstract class BaseDBHelper extends OrmLiteSqliteOpenHelper {
 		return dao;
 	}
 
+	@SuppressWarnings(value = "unchecked")
 	public <T> BaseDao<T> dao(Class<T> clazz){
 		String className = clazz.getSimpleName();
 		if(!helperMap.containsKey(className)){
-			helperMap.put(className,new BaseDaoImp<>(initHelper(),clazz));
+			helperMap.put(className,new BaseDaoImp<>(this,clazz));
 		}
 		return helperMap.get(className);
 	}
@@ -114,6 +119,8 @@ public abstract class BaseDBHelper extends OrmLiteSqliteOpenHelper {
 		daoMap.clear();
 		helperMap.clear();
 	}
+
+
 
 
 }
