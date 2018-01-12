@@ -16,6 +16,7 @@
 * 支持异步任务操作
 * 支持数据库升级，使数据库升级更为简洁
 * 完整的日志与异常处理
+* Android Studio自动生成表字段别名代码
 * 后续优化中...
 
 
@@ -61,7 +62,7 @@ compile 'com.zhousf.lib:easydb:1.7.5'
                 Log.d("upgrade","oldVersion="+oldVersion+",newVersion="+newVersion);
                 if(oldVersion < 2){
                     //增加字段ext
-                    dbHelper.addColumn(SimpleData.class,"ext",String.class,"100");
+                    dbHelper.addColumn(SimpleData.class,SimpleData._ext,String.class,"100");
                 }
             }
         });
@@ -80,7 +81,8 @@ int line = dao.add(new SimpleData(1,"信息1"));
 List<SimpleData> list = dao.queryAll();
 
 //多条件查询并排序
-List<SimpleData> list = dao.query(WhereInfo.get().between("index",1,18).equal("group1",true).order("id", false));
+List<SimpleData> list = dao.query(WhereInfo.get().between(SimpleData._index,1,18)
+    .equal("group1",true).order(SimpleData._id, false));
  
 //分页查询-每页5条
 WhereInfo info = WhereInfo.get().limit(5);
@@ -94,10 +96,10 @@ dao.update(data)
 dao.delete(data)
 
 //条目统计
-long num = dao.countOf(WhereInfo.get().equal("group1", true));
+long num = dao.countOf(WhereInfo.get().equal(SimpleData._group1, true));
 
 //是否存在
-boolean isExist = dao.isExist(WhereInfo.get().equal("description","信息2"));
+boolean isExist = dao.isExist(WhereInfo.get().equal(SimpleData._description,"信息2"));
 
 //清空表
 int line = dao.clearTable();
@@ -177,11 +179,27 @@ dao.asyncTask(new EasyRun<SimpleData>(){
 ```
 
 ## 数据库操作方法
-支持Android Studio多个Module表模型分散，表管理统一时请在表类中增加@TableModel注解，这样不同module的表都可以存放在自己模块下，框架会自动注册应用中所有module的表。
+支持Android Studio多个Module表模型分散，表管理统一时请在表类中增加@TableModel注解，这样不同module的表都可以存放在自己模块下，
+框架会自动注册应用中所有module的表。通过AndroidStudio插件自动生成字段别名，插件在根目录中AndroidPlugins.jar。
+安装插件：打开AndroidStudio -> File -> Settings -> Plugins -> Install plugin from disk -> Restart Android Studio
+使用插件自动生成代码：AndroidStudio -> Code -> Create Field
 
 ```java
 @TableModel
-public class SimpleData extends BaseModel {
+public class SimpleData {
+
+	//以下字段别名可以用过AndroidStudio插件自动生成
+	public final static String _id = "id";
+	public final static String _index = "index";
+	public final static String _description = "description";
+	public final static String _myDouble = "myDouble";
+	public final static String _myFloat = "myFloat";
+	public final static String _myLong = "myLong";
+	public final static String _date = "date";
+	public final static String _group1 = "group1";
+	public final static String _group2 = "group2";
+	public final static String _ext = "ext";
+	public final static String _father = "father";
 
 	@DatabaseField(generatedId = true)
 	public int id;
@@ -208,7 +226,6 @@ public class SimpleData extends BaseModel {
 		this.description = description;
 		this.group1 = ((index % 2) == 0);
 		this.group2 = ((index % 4) == 0);
-		super.father = "基类"+index;
 	}
 
 	@Override
@@ -222,7 +239,6 @@ public class SimpleData extends BaseModel {
 		sb.append(", ").append("group1=").append(group1);
 		sb.append(", ").append("group2=").append(group2);
 		sb.append(", ").append("ext=").append(ext);
-		sb.append(", ").append("father=").append(super.father);
 		return sb.toString();
 	}
 }

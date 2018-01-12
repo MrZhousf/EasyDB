@@ -63,12 +63,14 @@ public class MainActivity extends BaseActivity {
                 break;
             case R.id.queryBtn:
                 //查询
-                list = dao.queryAll(OrderInfo.get().order("id",false));
+                list = dao.queryAll(OrderInfo.get().order(SimpleData._id,false));
                 printList(list);
                 break;
             case R.id.queryWhereBtn:
                 //多条件查询并排序
-                list = dao.query(WhereInfo.get().between("index",1,18).equal("group1",true).order("id", false));
+                list = dao.query(WhereInfo.get().between(SimpleData._index,1,18)
+                        .equal(SimpleData._group1,true)
+                        .order(SimpleData._id, false));
                 printList(list);
                 break;
             case R.id.queryPageBtn:
@@ -108,12 +110,12 @@ public class MainActivity extends BaseActivity {
                 break;
             case R.id.countBtn:
                 //条目统计
-                long num = dao.countOf(WhereInfo.get().equal("group1", true));
+                long num = dao.countOf(WhereInfo.get().equal(SimpleData._group1, true));
                 tvResult.setText("总条数："+num);
                 break;
             case R.id.isExistBtn:
                 //是否存在
-                boolean isExist = dao.isExist(WhereInfo.get().equal("description","信息1"));
+                boolean isExist = dao.isExist(WhereInfo.get().equal(SimpleData._description,"信息1"));
                 tvResult.setText(isExist?"存在":"不存在");
                 break;
             case R.id.clearTableBtn:
@@ -123,7 +125,7 @@ public class MainActivity extends BaseActivity {
                 break;
             case R.id.likeBtn:
                 //模糊查询
-                list = dao.query(WhereInfo.get().like("description","我是%"));
+                list = dao.query(WhereInfo.get().like(SimpleData._description,"我是%"));
                 printList(list);
                 break;
             case R.id.batchBtn:
