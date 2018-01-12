@@ -12,7 +12,7 @@ import java.util.Date;
 @TableModel
 public class SimpleData {
 
-	//以下字段别名可以用过AndroidStudio插件生成
+	//以下字段别名可以通过AndroidStudio插件生成
 	public final static String _id = "id";
 	public final static String _index = "index";
 	public final static String _description = "description";

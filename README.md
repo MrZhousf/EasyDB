@@ -46,6 +46,7 @@ compile 'com.zhousf.lib:easydb:1.7.5'
 
 ## 项目演示DEMO
 项目中已包含所有支持业务的demo，详情请下载项目参考源码。
+所有集成过程只需2步：1、Application初始化；2、编写表模型
 
 ## Application中配置
 ```
@@ -188,7 +189,7 @@ dao.asyncTask(new EasyRun<SimpleData>(){
 @TableModel
 public class SimpleData {
 
-	//以下字段别名可以用过AndroidStudio插件自动生成
+	//以下字段别名可以通过AndroidStudio插件自动生成
 	public final static String _id = "id";
 	public final static String _index = "index";
 	public final static String _description = "description";
