@@ -4,7 +4,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
-import com.easydblib.dao.BaseDao;
+import com.easydblib.dao.DBDao;
 import com.easydblib.dao.BaseDaoImp;
 import com.easydblib.util.CheckUtil;
 import com.j256.ormlite.android.apptools.OrmLiteSqliteOpenHelper;
@@ -105,7 +105,7 @@ public abstract class BaseDBHelper extends OrmLiteSqliteOpenHelper {
 	}
 
 	@SuppressWarnings(value = "unchecked")
-	public <T> BaseDao<T> dao(Class<T> clazz){
+	public <T> DBDao<T> dao(Class<T> clazz){
 		String className = clazz.getSimpleName();
 		if(!helperMap.containsKey(className)){
 			helperMap.put(className,new BaseDaoImp<>(this,clazz));

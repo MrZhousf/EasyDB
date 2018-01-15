@@ -117,34 +117,44 @@ public class DBBuilder {
                 .setLogTAG(logTAG)
                 .build();
         initTable(context,tables);
-        return DBHelper.init(context,this);
+        return DBHelper.init(context,DBBuilder.this);
     }
 
     private void initTable(Context context,List<Class<?>> tables) {
+        DexFile df = null;
         try {
             String packageCodePath = context.getPackageCodePath();
-            DexFile df = new DexFile(packageCodePath);
-            Log.w("BaseApplication","-------------------------");
-            for (Enumeration enumeration = df.entries(); enumeration.hasMoreElements(); ) {
-                String className = String.valueOf(enumeration.nextElement());
+            df = new DexFile(packageCodePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if(df == null)
+            return ;
+        int num = 0;
+        for (Enumeration enumeration = df.entries(); enumeration.hasMoreElements(); ) {
+            String className = String.valueOf(enumeration.nextElement());
+            if(!TextUtils.isEmpty(className) && !className.contains("$")){
                 Class clazz;
                 try {
-                    clazz = Class.forName(className);
+                    clazz = Class.forName(className,false,context.getClassLoader());
                     if(clazz != null){
                         if(clazz.isAnnotationPresent(TableModel.class)){
-                            Log.w("BaseApplication---",clazz.getName());
                             if(!tables.contains(clazz)){
+                                num ++;
                                 tables.add(clazz);
+                                Log.w(EasyDBConfig.logTAG,num+": "+className);
                             }
+
                         }
                     }
                 } catch (ClassNotFoundException e) {
 
+                } catch (NoClassDefFoundError e){
+
+                } catch (Exception e){
+
                 }
             }
-            Log.w("BaseApplication","-------------------------");
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
