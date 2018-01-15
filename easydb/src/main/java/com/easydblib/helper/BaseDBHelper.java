@@ -49,7 +49,7 @@ public abstract class BaseDBHelper extends OrmLiteSqliteOpenHelper {
 						int databaseVersion,
 						List<Class<?>> modelClasses) {
 		//若SD卡不存在则为系统数据库
-		super(CheckUtil.checkSD(databasePath) ? new DatabaseSDContext(context.getApplicationContext(),databasePath) : context.getApplicationContext(),
+		super(CheckUtil.checkSD(databasePath,databaseName) ? new DatabaseSDContext(context.getApplicationContext(),databasePath) : context.getApplicationContext(),
 				databaseName, null, databaseVersion);
 		for(Class<?> table : modelClasses){
 			if(!this.modelClasses.contains(table)){

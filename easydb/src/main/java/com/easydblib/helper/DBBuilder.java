@@ -131,6 +131,8 @@ public class DBBuilder {
         if(df == null)
             return ;
         int num = 0;
+        StringBuilder log = new StringBuilder();
+        log.append("----------表清单---------\n");
         for (Enumeration enumeration = df.entries(); enumeration.hasMoreElements(); ) {
             String className = String.valueOf(enumeration.nextElement());
             if(!TextUtils.isEmpty(className) && !className.contains("$")){
@@ -142,7 +144,7 @@ public class DBBuilder {
                             if(!tables.contains(clazz)){
                                 num ++;
                                 tables.add(clazz);
-                                Log.w(EasyDBConfig.logTAG,num+": "+className);
+                                log.append(num).append(": ").append(className).append("\n");
                             }
 
                         }
@@ -156,6 +158,8 @@ public class DBBuilder {
                 }
             }
         }
+        log.append("-------------------------\n");
+        Log.d(EasyDBConfig.logTAG,log.toString());
     }
 
     public int getDbVersion() {
