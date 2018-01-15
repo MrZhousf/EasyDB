@@ -71,12 +71,12 @@ public class DBHelper extends BaseDBHelper{
         try {
             String column;
             String value = String.valueOf(defaultValue);;
-            if(columnType == String.class || columnType == Date.class || columnType == Date.class){
+            if(columnType == String.class || columnType == Date.class){
                 column = "TEXT";
                 value = "'"+String.valueOf(defaultValue)+"'";
             } else if(columnType == Long.class || columnType == Integer.class){
                 column = "INTEGER";
-            } else if(columnType == Boolean.class || columnType == java.sql.Date.class){
+            } else if(columnType == Boolean.class){
                 column = "NUMERIC";
             } else if(columnType == Double.class || columnType == Float.class){
                 column = "REAL";

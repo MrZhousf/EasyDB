@@ -9,7 +9,7 @@ import com.easydb.core.BaseActivity;
 import com.easydb.demo.model.SimpleData;
 import com.easydb.util.LogUtil;
 import com.easydblib.callback.EasyRun;
-import com.easydblib.dao.BaseDao;
+import com.easydblib.dao.DBDao;
 import com.easydblib.helper.DBHelper;
 import com.easydblib.info.OrderInfo;
 import com.easydblib.info.WhereInfo;
@@ -28,7 +28,7 @@ public class MainActivity extends BaseActivity {
     @Bind(R.id.tvResult)
     TextView tvResult;
 
-    BaseDao<SimpleData> dao;
+    DBDao<SimpleData> dao;
 
     @Override
     protected int initLayout() {
