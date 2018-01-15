@@ -17,7 +17,7 @@ import java.util.concurrent.Callable;
  * 数据库操作接口实现类
  * @author : zhousf
  */
-public class BaseDaoImp<T> implements BaseDao<T> {
+public class BaseDaoImp<T> implements DBDao<T> {
 
     private Dao<T, Long> dao;
 

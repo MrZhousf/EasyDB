@@ -15,7 +15,7 @@ import java.util.concurrent.Callable;
  * 数据库操作接口
  * @author : zhousf
  */
-public interface BaseDao<T> {
+public interface DBDao<T> {
 
     /**
      * 增加
